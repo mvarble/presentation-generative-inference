@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Generative Inference</title>
+  </head>
+  <body>
+    <svg viewBox="0 0 350 100" style="position: absolute">
+      <defs>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" 
+        refX="0" refY="2" orient="auto" fill="white">
+          <polygon points="0 0, 8 2, 0 4" />
+        </marker>
+      </defs>
+    </svg>
+    <div class="reveal">
+      <div class="slides">
+        <!-- slide 1 -->
+        <section>
+          <h1><u>Generative Inference</u></h1>
+          <h2 style="color: var(--r-link-color)">Matthew Varble</h2>
+        </section>
+        <!-- slide 2 -->
+        <section>
+          <h2>my research</h2>
+          <div class="about-me">
+            <svg viewBox="0 0 100 100">
+              <g class="fragment">
+                <ellipse cx="50" cy="50" fill="#50e6ff" fill-opacity="0.75" rx="40" ry="50"></ellipse>
+                <text x="50" y="10" font-size="5" fill="#307a88" text-anchor="middle">mathematics</text>
+              </g>
+              <g class="fragment">
+                <ellipse cx="50" cy="55" fill="#AC54F4" fill-opacity="0.75" rx="35" ry="40"></ellipse>
+                <text x="50" y="25" font-size="5" fill="#7C38B5" text-anchor="middle">probability</text>
+              </g>
+              <g class="fragment" transform="translate(50, 65) rotate(60)">
+                <ellipse cx="-15" cy="0" fill="#13EC2B" fill-opacity="0.75" rx="25" ry="15"></ellipse>
+                <text x="-35" y="0" font-size="5" fill="#148A21">monte</text>
+                <text x="-30" y="5" font-size="5" fill="#148A21">carlo</text>
+              </g>
+              <g class="fragment" transform="translate(50, 65) rotate(120)">
+                <ellipse cx="-15" cy="0" fill="#FF6012" fill-opacity="0.75" rx="25" ry="15"></ellipse>
+                <text x="30" y="4" font-size="5" fill="#AA3B05" text-anchor="end" transform="scale(-1, -1)">large</text>
+                <text x="35" y="9" font-size="5" fill="#AA3B05" text-anchor="end" transform="scale(-1, -1)">deviations</text>
+              </g>
+              <g class="fragment">
+                <ellipse cx="50" cy="75" fill="#FBC800" fill-opacity="0.75" rx="25" ry="15"></ellipse>
+                <text x="50" y="80" font-size="5" fill="#9B5E10" text-anchor="middle">"esoteric" objects</text>
+              </g>
+              <g class="fragment">
+                <text font-size="5" fill="red" transform="rotate(-60) translate(-20,32)">this talk</text>
+                <g transform="translate(50, 65) rotate(60)">
+                  <path 
+                    stroke="red"
+                    stroke-width="1"
+                    fill="none"
+                    d="M -22.8 -13.8 A 25,15 0 0,0 -9,15"
+                  />
+                </g>
+                <path 
+                  stroke="red"
+                  stroke-width="1"
+                  fill="none"
+                  d="M 32.1 64.5 A 25,15 0 1,0 39.8,61.2"
+                />
+                <g transform="translate(50, 65) rotate(120)">
+                  <path 
+                    stroke="red"
+                    stroke-width="1"
+                    fill="none"
+                    d="M 1 11 A 25,15 0 0,1 -24,13"
+                  />
+                </g>
+              </g>
+              <g class="fragment">
+                <path 
+                  fill="#ea2121"
+                  fill-opacity="0.75"
+                  stroke="none"
+                  d="M 40 0 l 10 10 l -10 5 l 5 3 l -2 5 l 5 5 l 0 10 l -20 -4 M 10 50 l 10 0 l 0 -5 M 70 80 l 10 5 l -10 -8 l -5 -2 l -10 3 l 0 20 M 70 20 l 20 10 l 20 25 l -10 25 l -10 -5 l -10 -20 l 8 -16 M 50 50 l 20 10 l 20 30"
+                />
+                <text x="55" y="-92" font-size="5" fill="#771616" text-anchor="middle" transform="rotate(90)">machine learning</text>
+              </g>
+            </svg>
+          </div>
+        </section>
+        <!-- slide 3 -->
+        <section>
+          <h2>uncertain quantities and their samples</h2>
+          <div class="uncertain-quantities">
+            <div>
+              <span style="position: absolute; left: 0; top: 0; margin: 20px; color: var(--r-selection-background-color)">$\mathbb{R}^2$</span>
+              <svg height="350" width="350" viewBox="0 0 10 10" style="top: 0;">
+                <g transform="scale(0.65, 0.65) translate(8, 8)">
+                  <circle cx="1.75411363" cy="1.75984711" r="0.15" fill="var(--r-selection-background-color)" />
+                  <circle cx="1.71771368" cy="-1.31195425" r="0.15" fill="var(--r-selection-background-color)" />
+                  <circle cx="1.18587072" cy="0.162826444" r="0.15" fill="var(--r-selection-background-color)" />
+                  <circle cx="1.19060170" cy="2.37314081" r="0.15" fill="var(--r-selection-background-color)" />
+                  <circle cx="0.229569778" cy="-0.951332990" r="0.15" fill="var(--r-selection-background-color)" />
+                  <circle cx="0.0830354853" cy="-1.30365624" r="0.15" fill="var(--r-selection-background-color)" />
+                  <circle cx="2.06531378" cy="1.75288978" r="0.15" fill="var(--r-selection-background-color)" />
+                  <circle cx="1.75429063" cy="3.84069762" r="0.15" fill="var(--r-selection-background-color)" />
+                  <circle cx="1.83093874" cy="4.79361417" r="0.15" fill="var(--r-selection-background-color)" />
+                  <circle cx="0.683666333" cy="-0.000467497316" r="0.15" fill="var(--r-selection-background-color)" />
+                  <circle cx="-1.75411363" cy="-1.75984711" r="0.15" fill="var(--r-selection-background-color)" />
+                  <circle cx="-1.71771368" cy="1.31195425" r="0.15" fill="var(--r-selection-background-color)" />
+                  <circle cx="-1.18587072" cy="-0.162826444" r="0.15" fill="var(--r-selection-background-color)" />
+                  <circle cx="-1.19060170" cy="-2.37314081" r="0.15" fill="var(--r-selection-background-color)" />
+                  <circle cx="-0.229569778" cy="0.951332990" r="0.15" fill="var(--r-selection-background-color)" />
+                  <circle cx="-0.0830354853" cy="1.30365624" r="0.15" fill="var(--r-selection-background-color)" />
+                  <circle cx="-2.06531378" cy="-1.75288978" r="0.15" fill="var(--r-selection-background-color)" />
+                  <circle cx="-1.75429063" cy="-3.84069762" r="0.15" fill="var(--r-selection-background-color)" />
+                  <circle cx="-1.83093874" cy="-4.79361417" r="0.15" fill="var(--r-selection-background-color)" />
+                  <circle cx="-0.683666333" cy="0.000467497316" r="0.15" fill="var(--r-selection-background-color)" />
+                  <line x1="0" y1="0" x2="2.7021" y2="-1.382" stroke="green" stroke-width="0.2" />
+                  <line x1="0" y1="0" x2="1.85441" y2="4.4817" stroke="purple" stroke-width="0.2" />
+                  <circle cx="0" cy="0" r="0.25" fill="blue" />
+                </g>
+                <foreignObject x="4" y="5" width="1" height="1.5">
+                  <div style="font-size: 0.6pt; color:blue">$\hat\mu$</div>
+                </foreignObject>
+                <foreignObject x="6" y="3" width="1" height="1.5">
+                  <div style="font-size: 0.6pt; color:green">$p$</div>
+                </foreignObject>
+                <foreignObject x="6" y="6" width="1" height="1.5">
+                  <div style="font-size: 0.6pt; color:purple">$q$</div>
+                </foreignObject>
+              </svg>
+            </div>
+            <svg viewBox="0 0 350 500">
+              <path 
+                 d="M 10,100 q 130,-80 260,-10"
+                 stroke="white" 
+                 fill="none" 
+                 stroke-width="8" 
+                 marker-end="url(#arrowhead)" />
+              <text x="160" y="40" text-anchor="middle" fill="white" font-size="80">modeling</text>
+              <path 
+                 d="M 320,400 q -130,80 -260,10"
+                 stroke="white" 
+                 fill="none" 
+                 stroke-width="8" 
+                 marker-end="url(#arrowhead)" />
+              <text x="150" y="520" text-anchor="middle" fill="white" font-size="80">sampling</text>
+            </svg>
+            <div>
+              <div>
+                <div>$\mu$ measure on $\mathbb{R}^2$</div>
+                <div>$\operatorname{mean}\mu = \displaystyle\int_{\mathbb{R}^2} \omega \mu({\rm d}\omega) = {\color{blue} \hat\mu}$</div>
+                <div>$\begin{aligned}
+                  \operatorname{cov}\mu
+                  &=\displaystyle\int_{\mathbb{R}^2} (\omega-{\color{blue} \hat\mu})(\omega-{\color{blue}\hat\mu})^\top \mu({\rm d}\omega) \\
+                  &=\begin{pmatrix} {\color{green} p} & {\color{purple} q} \end{pmatrix} \begin{pmatrix} {\color{green} p}^\top \\ {\color{purple} q}^\top \end{pmatrix}
+                  \end{aligned}$</div>
+              </div>
+            </div>
+          </div>
+        </section>
+        <!-- slide 4 -->
+        <section>
+          <h2>generative modeling</h2>
+          <p>
+            <span style="color:yellow">Measure $\mu$</span> generated from sampling, under which observations distribute.
+          </p>
+          <ul>
+            <li class="fragment fade-in-then-semi-out">
+              Sources. ${\color{yellow}\mu=}  {\color{pink}\operatorname{U}(a,b)}, ~{\color{pink}\operatorname{Exp}(\lambda)}, ~{\color{pink}\operatorname{N}(x,Q)}, ~\text{etc.}$
+            </li>
+            <li class="fragment fade-in-then-semi-out">
+              Transports/maps. ${\color{yellow} \mu =} {\color{orange}T_\#}{\color{pink}\nu}$
+              <div style="padding-left: 1em; font-size:25px;"><tt>i.e. sample ${\color{pink}x \sim \nu}$, evaluate ${\color{yellow}y =} {\color{orange}T(}{\color{pink}x}{\color{orange})}$</tt></div>
+            </li>
+            <ul>
+              <li class="fragment fade-in-then-semi-out">
+                importance samples. ${\color{orange}T(}{\color{pink}x}{\color{orange})} = {\color{pink}x} \cdot \frac{{\rm d}\nu'}{{\rm d}\nu}({\color{pink}x})$
+              </li>
+            </ul>
+            <li class="fragment fade-in-then-semi-out">
+              <span style="color:white">Kernels/flatmaps.</span>&nbsp;
+              <span>${\color{yellow} \mu =} {\color{orange}\kappa \ast} {\color{pink}\nu}$</span>
+              <div style="padding-left: 1em; font-size:25px"><tt>i.e. sample ${\color{pink}x \sim \nu}$, sample ${\color{yellow}y \sim} {\color{orange}\kappa(}{\color{pink}x}{\color{orange},\cdot)}$</tt></div>
+            </li>
+            <ul>
+              <li class="fragment fade-in-then-semi-out">
+                independent samples/zips. ${\color{orange}\kappa(}{\color{pink}x}{\color{orange},\cdot)}  = \nu'$
+              </li>
+            </ul>
+            <li class="fragment fade-in">
+              <span style="color:white">All sorts of combinations thereof!</span>
+            </li>
+          </ul>
+        </section>
+        <!-- slide 5 -->
+        <section>
+          <h2>generative modeling: example 1</h2>
+          <div class="example-grid">
+            <div class="circle" style="grid-row: 1/2; grid-column: 1/2">$X(0)$</div>
+            <div class="circle" style="grid-row: 1/2; grid-column: 3/4">$X(1)$</div>
+            <div style="grid-row: 1/2; grid-column: 5/6; font-size: 60px; color: var(--r-link-color)">$\cdots$</div>
+            <div class="circle" style="grid-row: 3/4; grid-column: 1/2">$Y(0)$</div>
+            <div class="circle" style="grid-row: 3/4; grid-column: 3/4">$Y(1)$</div>
+            <div style="grid-row: 1/2; grid-column: 2/3; position: relative">
+              <svg width="200px" viewBox="0 0 350 100">
+                <path 
+                  d="M 0,50 l 280,0"
+                  stroke="white" 
+                  fill="none" 
+                  stroke-width="8" 
+                  marker-end="url(#arrowhead)" />
+                </svg>
+              <span style="color: orange; position: absolute; bottom: -10px; left: 50px;">$\kappa_1 \ast \cdot$</span>
+            </div>
+            <div style="grid-row: 1/2; grid-column: 4/5; position: relative">
+              <svg width="200px" viewBox="0 0 350 100">
+                <path 
+                  d="M 0,50 l 280,0"
+                  stroke="white" 
+                  fill="none" 
+                  stroke-width="8" 
+                  marker-end="url(#arrowhead)" />
+                </svg>
+              <span style="color: orange; position: absolute; bottom: -10px; left: 50px;">$\kappa_2 \ast \cdot$</span>
+            </div>
+            <div style="grid-row: 2/3; grid-column: 1/2; position: relative">
+              <svg height="200px" viewBox="0 0 100 350">
+                <path 
+                  d="M 50,0 l 0,280"
+                  stroke="white" 
+                  fill="none" 
+                  stroke-width="8" 
+                  marker-end="url(#arrowhead)" />
+              </svg>
+              <span style="color: orange; position: absolute; bottom: 93px; left: 7px; transform: rotate(90deg); width: 100px;">$\lambda_1 \ast \cdot$</span>
+            </div>
+            <div style="grid-row: 2/3; grid-column: 3/4; position: relative">
+              <svg height="200px" viewBox="0 0 100 350">
+                <path 
+                  d="M 50,0 l 0,280"
+                  stroke="white" 
+                  fill="none" 
+                  stroke-width="8" 
+                  marker-end="url(#arrowhead)" />
+              </svg>
+              <span style="color: orange; position: absolute; bottom: 93px; left: 7px; transform: rotate(90deg); width: 100px;">$\lambda_2 \ast \cdot$</span>
+            </div>
+          </div>
+        </section>
+        <!-- slide 6 -->
+        <section>
+          <h2>generative modeling: example 2</h2>
+          <p>
+          Recurrent neural network $\color{pink} T: \mathbb{X} \times \mathbb{L} \times \mathbb{W} \times \Theta \rightarrow \mathbb{X} \times \mathbb{L}$ pushing repeated samples of <span style="color:yellow">normal distribution $\nu$</span>
+          
+          </p>
+          <ul>
+            <li class="fragment fade-in-then-semi-out">Fix <span style="color:lightskyblue">parameter $\theta \in \Theta$</span></li>
+            <li class="fragment fade-in-then-semi-out"><div style="display: flex; justify-content: space-evenly">$\color{orange}X(0) \sim \nu_X$ $\color{lightgreen}L(0) \sim \nu_L$ $\color{aqua}W(0) \sim \nu$</div></li>
+            <li class="fragment fade-in-then-semi-out">For each $k = 0 , 1, 2, \ldots$</li>
+            <ul>
+              <li class="fragment fade-in-then-semi-out">$({\color{orange} X(k+1)}, {\color{lightgreen}L(k+1)}) = {\color{pink}T(}{\color{orange}X(k)}{\color{pink},}{\color{lightgreen}L(k)}{\color{pink},}{\color{aqua}W(k)}{\color{pink},}{\color{lightblue}\theta}\color{pink})$</li>
+              <li class="fragment fade-in-then-semi-out">${\color{aqua}W(k+1)} \color{yellow} \sim \nu$</li>
+            </ul>
+          </ul>
+          <p class="fragment fade-in">$({\color{orange} X(k+1)}, {\color{lightgreen}L(k+1)})$ distributes ${\color{pink}T(\cdot,\cdot,}{\color{lightblue}\theta}{\color{pink})_\#}\delta_{{\color{orange} X(k)}, {\color{lightgreen}L(k)}} \otimes {\color{yellow}\mu}$ conditioned on $({\color{orange} X(k)}, {\color{lightgreen}L(k)})$</p>
+        </section>
+        <!-- slide 7 -->
+        <section>
+          <h2>Bayesian inference</h2>
+          <ul>
+            <li class="fragment fade-in-then-semi-out">
+              May derive <span style="color:yellow">density $p_{XY}$</span> associated to joint quantity $({\color{orange}X},{\color{pink}Y})$ in model goverened by $\mu$.
+            </li>
+            <li class="fragment fade-in-then-semi-out">
+              Generative model specifies sampling mechanism for $\color{orange}X$ and ${\color{pink}Y}|\color{orange}X$.
+            </li>
+            <li class="fragment fade-in">
+              Samples from ${\color{orange}X}|\color{pink}Y$ may be sampled using $\color{yellow}p_{Y|X} \propto p_{Y}p_{X|Y}$.
+            </li>
+            <ul>
+              <li class="fragment fade-in-then-semi-out">Importance sampling</li>
+              <li class="fragment fade-in-then-semi-out">MCMC</li>
+              <li class="fragment fade-in-then-semi-out" style="text-decoration: line-through">MAP</li>
+            </ul>
+          </ul>
+        </section>
+        <!-- slide 8 -->
+        <section>
+          <h2>A cool example</h2>
+          <div class="admonition is-info" style="font-size: 12pt">
+            <header class="admonition-header">Transport map accelerated Monte Carlo</header>
+            <div style="display: flex; flex-direction: column; margin: 0 1em 0.5em 1em; text-align: left">
+              <div style="display: flex; margin: 0.5em 0 0.5em 0.5em" class="fragment fade-in-then-semi-out">
+                <em style="margin-right: 1em">Input.</em>
+                <span>Initial state $x_0$, inital parameter $\overline \gamma_0 \in \mathcal A$, reference proposal $Q_r$, integers $K_U$ and $L$.<span>
+              </div>
+              <div style="display: flex; margin: 0.5em 0 0.5em 0.5em" class="fragment fade-in-then-semi-out">
+                <em style="margin-right: 1em">Output.</em>
+                <span>MCMC samples $\{x^{(1)}, \ldots, x^{(L)}\}$ of the target distribution $\mu_x$.</span>
+              </div>
+              <div style="display: flex" class="fragment fade-in-then-semi-out">
+                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>1</strong></tt>
+                <span>Set state $x^{(1)} = x_0$</span>
+              </div>
+              <div style="display: flex" class="fragment fade-in-then-semi-out">
+                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>2</strong></tt>
+                <span>Set parameters $\overline\gamma^{(1)} = \overline\gamma_0$</span>
+              </div>
+              <div style="display: flex" class="fragment fade-in-then-semi-out">
+                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>3</strong></tt>
+                <span><strong style="margin-right: 0.5em">for</strong>$k \leftarrow 1 \ldots L-1$<strong style="margin-left: 0.5em">do</strong></span>
+              </div>
+              <div style="display: flex" class="fragment fade-in-then-semi-out">
+                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>4</strong></tt>
+                <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
+                <span>Compute the reference state, $r^{(k)} = T(x^{(k)}; \overline \gamma^{(k)})$</span>
+              </div>
+              <div style="display: flex" class="fragment fade-in-then-semi-out">
+                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>5</strong></tt>
+                <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
+                <span>Sample the reference proposal $r' \sim Q_r(\cdot|r^{(k)})$</span>
+              </div>
+              <div style="display: flex" class="fragment fade-in-then-semi-out">
+                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>6</strong></tt>
+                <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
+                <span>Compute the target proposal sample, $x' = T^{-1}(r'; \overline \gamma^{(k)})$</span>
+              </div>
+              <div style="display: flex" class="fragment fade-in-then-semi-out">
+                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>7</strong></tt>
+                <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
+                <span>
+                  Calculate the acceptance probability:
+                  $$ \alpha = \min\Big\{  1, \frac{\pi(x')q_r\big(r^{(k)} | r' \big)\big|\det\nabla T(x^{(k)})\big|}{\pi(x)q_r\big(r' | r^{(k)} \big)\big|\det\nabla T(x')\big|}\Big\} $$
+                </span>
+              </div>
+              <div style="display: flex" class="fragment fade-in-then-semi-out">
+                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>8</strong></tt>
+                <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
+                <span>Set $x^{(k+1)}$ to $x'$ with probability $\alpha$; else set $x^{(k+1)}$ to $x^{(k)}$</span>
+              </div>
+              <div style="display: flex" class="fragment fade-in-then-semi-out">
+                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>9</strong></tt>
+                <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
+                <span><strong style="margin-right: 0.5em">if</strong>$(k \mod K_U) = 0$<strong style="margin-left: 0.5em">then</strong></span>
+              </div>
+              <div style="display: flex" class="fragment fade-in-then-semi-out">
+                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>10</strong></tt>
+                <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
+                <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
+                <span><strong style="margin-right: 0.5em">for</strong>$i \leftarrow 1\ldots d$<strong style="margin-left: 0.5em">do</strong></span>
+              </div>
+              <div style="display: flex" class="fragment fade-in-then-semi-out">
+                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>11</strong></tt>
+                <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
+                <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
+                <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
+                <span>Update $\overline \gamma_i^{(k+1)}$ by optimizing $\gamma \rightarrow C\big(T(\cdot; \gamma)\big)$ for samples $\{x^{(1)},\ldots,x^{(k)}\}$</span>
+              </div>
+              <div style="display: flex" class="fragment fade-in-then-semi-out">
+                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>12</strong></tt>
+                <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
+                <span><strong style="margin-right: 0.5em">else</strong></span>
+              </div>
+              <div style="display: flex" class="fragment fade-in-then-semi-out">
+                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>13</strong></tt>
+                <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
+                <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
+                <span>Keep $\overline \gamma^{(k+1)} = \overline \gamma^{(k)}$</span>
+              </div>
+              <div style="display: flex" class="fragment fade-in">
+                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>14</strong></tt>
+                <span><strong style="margin-right:1em">return</strong> $\{x^{(1)},\ldots,x^{(L)}\}$</span>
+              </div>
+            </div>
+          </div>
+        </section>
+        <!-- slide 9 -->
+        <section>
+          <h2>calibration</h2>
+          <p>Calibrate <span style="color:yellow">measure $\color{yellow}\mu_\theta$</span>, selecting <span style="color:pink">parameter $\theta \in \Theta$</span> so samples match data.</p>
+          <blockquote class="fragment fade-in" style="width: 100%" data-fragment-index="1">
+            Any theoretical moment may be approximated via samples
+            $$\begin{aligned}
+            {\color{orange}M_{f,\theta}} 
+            &= \int f(y) \mu_\theta({\rm d}y) \\
+            &\approx \sum_{k=1}^M f({\color{yellow}y^{(i)}}), & \color{yellow} y^{(1)},\ldots,y^{(M)} \sim \mu_\theta  
+            \end{aligned}$$
+          </blockquote>
+          <p class="fragment" style="color:aqua">Think about GANs!</p>
+        </section>
+        <!-- slide 9 -->
+        <section>
+          <h1>That's it!</h1>
+        </section>
+      </div>
+    </div>
+  </body>
+</html>

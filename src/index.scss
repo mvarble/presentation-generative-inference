@@ -1,0 +1,75 @@
+@import "~katex/dist/katex.css";
+@import "~reveal.js/dist/reveal.css";
+@import "~reveal.js/dist/theme/league.css";
+
+:root {
+  --r-main-font-size: 30px;
+  --r-heading-text-transform: none;
+}
+
+.about-me {
+  width: 500px;
+  height: 500px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.about-me > svg {
+  position: absolute; 
+  top: 0; 
+  left: 0;
+}
+
+.uncertain-quantities {
+  width: 100%;
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.uncertain-quantities > div {
+  position: relative;
+  flex-grow: 0;
+  height: 350px;
+  width: 350px;
+  margin: 0 40px;
+  border: 5px solid var(--r-link-color);
+  background: white;
+  color: black;
+}
+
+.uncertain-quantities > svg {
+  flex-grow: 0;
+  flex-basis: 200px
+}
+
+.uncertain-quantities > div:last-child > div {
+  margin: 0 auto;
+  padding: 1em;
+  height: 100%;
+  font-size: 14pt;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+
+.example-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 150px 200px) 150px;
+  grid-template-rows: 150px 200px 150px;
+  gap: 10px 10px;
+  width: 890px;
+  margin: 0 auto;
+}
+
+.example-grid > * {
+  justify-self: center;
+  align-self: center;
+}
+
+.example-grid > .circle {
+  color: black;
+  background: white;
+  border: 10px solid var(--r-link-color);
+  border-radius: 100%;
+  padding: 20px;
+}
