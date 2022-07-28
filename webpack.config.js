@@ -12,7 +12,7 @@ module.exports = {
   entry: './src/index.js',
   output: {
     path: path.resolve(process.cwd(), 'output'),
-    filename: 'bundle.js',
+    filename: 'bundle.[fullhash].js',
   },
   module: {
     rules: [
