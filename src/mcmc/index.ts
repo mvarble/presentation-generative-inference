@@ -81,7 +81,7 @@ function getChain(proposals: Proposal[], preRejection: boolean): ChainLink[] {
     } else if (accept) {
       chain.push({ x, y, amount: 1 });
     } else {
-      chain.slice(0).reverse().find(p => p.amount).amount++;
+      lastSuccess(chain).amount++;
       chain.push({ x, y, amount: 0 });
     }
   });
@@ -92,6 +92,10 @@ enum State {
   Pending,
   Accepted,
   Rejected,
+}
+
+function lastSuccess(chain: ChainLink[]): ChainLink {
+  return chain.slice(0).reverse().find(p => p.amount);
 }
 
 function chainLinkState({ amount }: ChainLink): State {
@@ -153,6 +157,11 @@ class MCMCDiagram {
           .attr('fill-opacity', 0.5)
           .attr('stroke', chainLinkColor)
           .attr('stroke-width', 1)
+          .attr('cx', (d,i) => i > 0 ? XSCALE(lastSuccess(chain).x) : XSCALE(d.x))
+          .attr('cy', (d,i) => i > 0 ? YSCALE(lastSuccess(chain).y) : YSCALE(d.y))
+          .attr('r', 0)
+          .transition()
+          .duration(500)
           .attr('cx', d => XSCALE(d.x))
           .attr('cy', d => YSCALE(d.y))
           .attr('r', d => 5 * (d.amount || 1))
@@ -163,6 +172,8 @@ class MCMCDiagram {
           .duration(250)
           .attr('fill', chainLinkColor)
           .attr('stroke', chainLinkColor)
+          .attr('cx', d => XSCALE(d.x))
+          .attr('cy', d => YSCALE(d.y))
           .attr('r', d => 5 * (d.amount || 1))
         )
       )
