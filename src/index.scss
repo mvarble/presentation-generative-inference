@@ -53,6 +53,16 @@ blockquote.generative-modeling-split ul {
   width: calc( 55% - 0.1em );
 }
 
+#mcmc-diagram {
+  height: 580px;
+  position: relative;
+  text-align: left;
+}
+
+#mcmc-diagram ul {
+  display: block;
+}
+
 .uncertain-quantities {
   width: 100%;
   display: flex;

@@ -155,33 +155,47 @@
         <section>
           <h2>generative modeling</h2>
           <p>
-          Construct psuedorandom computer algorithms to simulate sampling <span style="color:yellow">measures $\mu$</span> and construct <span style="color:pink">quantities</span> through sucessive <span style="color:lightgreen">operations</span>
+          Construct computer algorithms to consecutively sample <span style="color:pink">quantities</span>/<span style="color:yellow">measures</span> via sucessive <span style="color:lightgreen">operations</span>
           </p>
           <blockquote class="fat generative-modeling-split">
             <ul>
-              <li class="fragment fade-in-then-semi-out" data-fragment-index="1">
-                <span style="color:orange">Sources.</span>&nbsp;
-                $\color{yellow}\mu$ is in classical family.
-              </li>
-              <li class="fragment fade-in-then-semi-out">
-                <span style="color:orange">Transports/maps.</span> ${\color{yellow} \mu =} {\color{lightgreen}T_\#}{\color{pink}\nu}$
-                <div>
-                  <span style="font-family: mono; padding-left: 1em; font-size: 20px">
-                    i.e. $x \sim \nu$ and $y = T(x)$
+              <div class="fragment fade-in" data-fragment-index="1">
+                <span class="fragment" data-fragment-index="2"></span>
+                <span class="fragment" data-fragment-index="3"></span>
+                <li class="fragment semi-fade-out" data-fragment-index="4">
+                  <span>
+                    <span style="color:orange">Sources.</span>&nbsp;
+                    ${\color{pink}x} \sim \color{yellow}\mu$; simple $\color{yellow}\mu$
                   </span>
-                </div>
-              </li>
-              <li class="fragment fade-in-then-semi-out">
-                <span style="color:orange">Kernels/flatmaps.</span>&nbsp;
-                <span>${\color{yellow} \mu =} {\color{lightgreen}\kappa \ast} {\color{pink}\nu}$</span>
-                <div>
-                  <span style="font-family: mono; padding-left: 1em; font-size: 20px">
-                    i.e. $x \sim \nu$ and $y \sim \kappa(x,\cdot)$
-                  </tt>
-                </div>
-              </li>
+                </li>
+              </div>
+              <div class="fragment fade-in" data-fragment-index="4">
+                <span class="fragment" data-fragment-index="5"></span>
+                <span class="fragment" data-fragment-index="6"></span>
+                <li class="fragment semi-fade-out" data-fragment-index="7">
+                  <span style="color:orange">Transports/maps.</span> ${\color{pink}y} \sim {\color{lightgreen}T_\#}{\color{yellow}\nu}$
+                  <div>
+                    <span style="font-family: mono; padding-left: 1em; font-size: 20px">
+                      i.e. ${\color{pink} x} \sim \color{yellow}\nu$ and ${\color{pink}y} = \color{lightgreen}T(\color{pink}x\color{lightgreen})$
+                    </span>
+                  </div>
+                </li>
+              </div>
+              <div class="fragment fade-in" data-fragment-index="7">
+                <span class="fragment" data-fragment-index="8"></span>
+                <span class="fragment" data-fragment-index="9"></span>
+                <li class="fragment semi-fade-out" data-fragment-index="10">
+                  <span style="color:orange">Kernels/flatmaps.</span>&nbsp;
+                  <span>${\color{pink} y} \sim {\color{lightgreen}\kappa \ast} {\color{yellow}\nu}$</span>
+                  <div>
+                    <span style="font-family: mono; padding-left: 1em; font-size: 20px">
+                      i.e. ${\color{pink}x} \sim {\color{yellow}\nu}$ and ${\color{pink}y} \sim \color{lightgreen}\kappa(\color{pink}x,\color{lightgreen}\cdot)$
+                    </tt>
+                  </div>
+                </li>
+              </div>
               <ul>
-                <li class="fragment fade-in-then-semi-out">
+                <li class="fragment fade-in-then-semi-out" data-fragment-index="10">
                   <span style="color:orange">independent samples/zips.</span> ${\color{lightgreen}\kappa(}{\color{pink}x}{\color{lightgreen},\cdot)}  = \nu'$
                 </li>
               </ul>
@@ -189,7 +203,7 @@
                 <span style="color:orange">All sorts of combinations thereof!</span>
               </li>
             </ul>
-            <div id="generating-diagram" class="fragment" data-fragment-index="1"></div>
+            <div id="generating-diagram" class="fragment" data-fragment-index="2"></div>
           </blockquote>
         </section>
         <!-- slide 06 -->
@@ -463,75 +477,144 @@
         <section>
           <h2>Bayesian inference</h2>
           <p>
-            Various <i>estimators</i> for ${\color{pink}X}|\color{pink}Y$, often based off of $\color{lightgreen}p_{X|Y} \propto p_{Y|X}p_X$
+            Various <i>estimators</i> for ${\color{pink}X}|\color{pink}Y=y$, often based off of $\color{lightgreen}p_{X|Y} \propto p_{Y|X}p_X$
           </p>
           <blockquote class="fat">
             <ul>
               <li class="fragment fade-in-then-semi-out">
                 <span style="color:orange">MLE (respectively MAP)</span>
-                Maximize $p_{Y|X}$ (respectively $p_{X|Y}$).
+                Maximize $p_{Y|X}(y|\cdot)$ (respectively $p_{X|Y}(\cdot|y)$).
               </li>
               <li class="fragment fade-in-then-semi-out">
                 <span style="color:orange">Importance sampling.</span>
-                Try to match expected value of $\mu_{X|Y}$ on $\color{pink}Y=y$; use proportionate value $E_\mu[p(y|X)X]$.
+                Sample a weighted prior.
+                $$\int_{\mathbb{X}} x \mu_{X|Y}({\rm d}x|y) \propto \int_{\mathbb{X}} x p_{Y|X}(y|x) \mu_X({\rm d}x)$$
                 <div style="font-family: mono; font-size: 20px; padding: 0.5em">
-                  i.e. sample $x_1,\ldots,x^M \sim \mu_X$ and take 
-                  $$\hat{x} = \sum_{i=1}^M \bigg( \frac{p(y|x_i) x_i}{\sum_{j=1}^M p(y|x_j)} \bigg) $$
+                  i.e. sample $x_1,\ldots,x_M \sim \mu_X$ and take 
+                  $\displaystyle \hat{x} = \sum_{i=1}^M \bigg( \frac{p(y|x_i) x_i}{\sum_{j=1}^M p(y|x_j)} \bigg) $
                 </div>
               </li>
               <li class="fragment fade-in-then-semi-out">
                 <span style="color:orange">MCMC</span>
-                Construct a Markov chain $M$ in which the invariant distribution is $\mu_{X|Y}$.
-                Uses rejection method which only depends on proportion.
-                <div style="font-family: mono; font-size: 20px; padding: 0.5em">
-                  $$ \alpha(m_k,m_{k+1}) = \min\left\{ 1, \frac{p_X(m_{k+1})p_{Y|X}(y|m_{k+1}) q(m_k|m_{k+1})}{p_X(m_k)p_{Y|X}(y|m_k) q(m_{k+1}|m_k)} \right\} $$
-                </div>
+                Construct a Markov chain with proposal kernel 
+                $$Q({\rm d}x'|x) = q(x'|x){\rm d}x'$$
+                and rejection scheme to ensure the invariant distribution is $\mu_{X|Y}$.
               </li>
             </ul>
           </blockquote>
         </section>
         <!-- slide 11 -->
         <section>
+          <h2>Markov-chain Monte Carlo</h2>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <span class="fragment"></span>
+          <div id="mcmc-diagram">
+            <div style="font-size: 18px">
+              <div style="display: flex">
+                <span style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>1</strong></span>
+                <span>Initialize state $x_0$</span>
+              </div>
+              <div style="display: flex">
+                <span style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>2</strong></span>
+                <span><strong style="margin-right: 0.5em">for</strong>$k = 0, \ldots, L-1$<strong style="margin-left: 0.5em">do</strong></span>
+              </div>
+              <div style="display: flex">
+                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>3</strong></tt>
+                <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
+                <span>sample proposal $\tilde x_{k+1} \sim Q(\cdot|x_k)$</span>
+              </div>
+              <div style="display: flex">
+                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>4</strong></tt>
+                <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
+                <span>
+                  sample $a_k \sim U(0,1)$ and set the following.
+                  $$
+                    \begin{gathered}
+                      \alpha(x_k, \tilde x_{k+1}) = \min\left\{ 1, \frac{p_X(\tilde x_{k+1})p_{Y|X}(y|\tilde x_{k+1}) q(x_k|\tilde x_{k+1})}{p_X(x_k)p_{Y|X}(y|x_k) q(\tilde x_{k+1}|x_k)} \right\}   \\
+                      x_{k+1} = \left\{ \begin{array}{ll} \tilde x_{k+1} & a_k \leq \alpha(x_k,\tilde x_{k+1}) \\ x_k &  \text{ otherwise} \end{array}\right.
+                    \end{gathered}
+                  $$
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+        <!-- slide 12 -->
+        <section>
           <h2>A cool example</h2>
-          <div class="admonition is-info" style="font-size: 12pt">
-            <header class="admonition-header">Transport map accelerated Monte Carlo</header>
+          <p>Learn a proposal kernel through variational transport methods</p>
+          <blockquote class="fat" style="font-size: 12pt">
             <div style="display: flex; flex-direction: column; margin: 0 1em 0.5em 1em; text-align: left">
-              <div style="display: flex; margin: 0.5em 0 0.5em 0.5em" class="fragment fade-in-then-semi-out">
+              <div style="display: flex; margin: 0.5em 0 0.5em 0.5em">
                 <em style="margin-right: 1em">Input.</em>
                 <span>Initial state $x_0$, inital parameter $\overline \gamma_0 \in \mathcal A$, reference proposal $Q_r$, integers $K_U$ and $L$.<span>
               </div>
-              <div style="display: flex; margin: 0.5em 0 0.5em 0.5em" class="fragment fade-in-then-semi-out">
+              <div style="display: flex; margin: 0.5em 0 0.5em 0.5em">
                 <em style="margin-right: 1em">Output.</em>
                 <span>MCMC samples $\{x^{(1)}, \ldots, x^{(L)}\}$ of the target distribution $\mu_x$.</span>
               </div>
-              <div style="display: flex" class="fragment fade-in-then-semi-out">
+              <div style="display: flex">
                 <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>1</strong></tt>
                 <span>Set state $x^{(1)} = x_0$</span>
               </div>
-              <div style="display: flex" class="fragment fade-in-then-semi-out">
+              <div style="display: flex" >
                 <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>2</strong></tt>
                 <span>Set parameters $\overline\gamma^{(1)} = \overline\gamma_0$</span>
               </div>
-              <div style="display: flex" class="fragment fade-in-then-semi-out">
+              <div style="display: flex" >
                 <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>3</strong></tt>
                 <span><strong style="margin-right: 0.5em">for</strong>$k \leftarrow 1 \ldots L-1$<strong style="margin-left: 0.5em">do</strong></span>
               </div>
-              <div style="display: flex" class="fragment fade-in-then-semi-out">
+              <div style="display: flex" >
                 <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>4</strong></tt>
                 <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
                 <span>Compute the reference state, $r^{(k)} = T(x^{(k)}; \overline \gamma^{(k)})$</span>
               </div>
-              <div style="display: flex" class="fragment fade-in-then-semi-out">
+              <div style="display: flex" >
                 <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>5</strong></tt>
                 <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
                 <span>Sample the reference proposal $r' \sim Q_r(\cdot|r^{(k)})$</span>
               </div>
-              <div style="display: flex" class="fragment fade-in-then-semi-out">
+              <div style="display: flex" >
                 <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>6</strong></tt>
                 <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
                 <span>Compute the target proposal sample, $x' = T^{-1}(r'; \overline \gamma^{(k)})$</span>
               </div>
-              <div style="display: flex" class="fragment fade-in-then-semi-out">
+              <div style="display: flex">
                 <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>7</strong></tt>
                 <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
                 <span>
@@ -539,48 +622,48 @@
                   $$ \alpha = \min\Big\{  1, \frac{\pi(x')q_r\big(r^{(k)} | r' \big)\big|\det\nabla T(x^{(k)})\big|}{\pi(x)q_r\big(r' | r^{(k)} \big)\big|\det\nabla T(x')\big|}\Big\} $$
                 </span>
               </div>
-              <div style="display: flex" class="fragment fade-in-then-semi-out">
+              <div style="display: flex">
                 <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>8</strong></tt>
                 <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
                 <span>Set $x^{(k+1)}$ to $x'$ with probability $\alpha$; else set $x^{(k+1)}$ to $x^{(k)}$</span>
               </div>
-              <div style="display: flex" class="fragment fade-in-then-semi-out">
+              <div style="display: flex">
                 <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>9</strong></tt>
                 <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
                 <span><strong style="margin-right: 0.5em">if</strong>$(k \mod K_U) = 0$<strong style="margin-left: 0.5em">then</strong></span>
               </div>
-              <div style="display: flex" class="fragment fade-in-then-semi-out">
+              <div style="display: flex">
                 <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>10</strong></tt>
                 <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
                 <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
                 <span><strong style="margin-right: 0.5em">for</strong>$i \leftarrow 1\ldots d$<strong style="margin-left: 0.5em">do</strong></span>
               </div>
-              <div style="display: flex" class="fragment fade-in-then-semi-out">
+              <div style="display: flex">
                 <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>11</strong></tt>
                 <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
                 <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
                 <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
                 <span>Update $\overline \gamma_i^{(k+1)}$ by optimizing $\gamma \rightarrow C\big(T(\cdot; \gamma)\big)$ for samples $\{x^{(1)},\ldots,x^{(k)}\}$</span>
               </div>
-              <div style="display: flex" class="fragment fade-in-then-semi-out">
+              <div style="display: flex">
                 <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>12</strong></tt>
                 <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
                 <span><strong style="margin-right: 0.5em">else</strong></span>
               </div>
-              <div style="display: flex" class="fragment fade-in-then-semi-out">
+              <div style="display: flex">
                 <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>13</strong></tt>
                 <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
                 <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
                 <span>Keep $\overline \gamma^{(k+1)} = \overline \gamma^{(k)}$</span>
               </div>
-              <div style="display: flex" class="fragment fade-in">
+              <div style="display: flex">
                 <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>14</strong></tt>
                 <span><strong style="margin-right:1em">return</strong> $\{x^{(1)},\ldots,x^{(L)}\}$</span>
               </div>
             </div>
-          </div>
+          </blockquote>
         </section>
-        <!-- slide 12 -->
+        <!-- slide 13 -->
         <section>
           <h1>That's it!</h1>
         </section>

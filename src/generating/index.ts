@@ -7,11 +7,13 @@ import jlCode from './model.jl';
 import traceTxt from './trace.txt';
 import { container, codeContainer, code, plot, trace } from './index.module.css';
 
-const NO_PARENT_MESSAGE = 'GeneratingDiagram: `parentElm` is not in deck';
 
 /**
  * establish some constants we will use
  */
+
+// error message
+const NO_PARENT_MESSAGE = 'GeneratingDiagram: `parentElm` is not in deck';
 
 // sample data
 const SAMPLES = require('./samples.json');
@@ -106,11 +108,13 @@ class GeneratingDiagram {
     this.stage = stage;
 
     // use d3 to animate between stages
-    if (this.stage === -1) this.preStage();
-    else if (this.stage === 0) this.stage0();
+    if (this.stage <= 0) this.stage0();
     else if (this.stage === 1) this.stage1();
     else if (this.stage === 2) this.stage2();
-    else this.stage3();
+    else if (this.stage === 3) this.stage3();
+    else if (this.stage === 4) this.stage4();
+    else if (this.stage === 5) this.stage5();
+    else this.stage6();
   }
 
   createAmplitudes(delay: boolean) {
@@ -127,7 +131,7 @@ class GeneratingDiagram {
             .attr('stroke', 'green')
             .attr('r', 0)
             .transition()
-            .delay((_, i) => delay ? 1000 * i / SAMPLES.length + 3000 : 0)
+            .delay((_, i) => delay ? 1000 * i / SAMPLES.length : 0)
             .duration(delay ? 500 : 0)
             .attr('r', 2),
         update => update.attr('r', 2)
@@ -151,7 +155,7 @@ class GeneratingDiagram {
               .attr('stroke-dashoffset', length)
               .attr('stroke-dasharray', length)
               .transition()
-              .delay((_, i) => 1000 * i / SAMPLES.length + 3000)
+              .delay((_, i) => 1000 * i / SAMPLES.length)
               .duration(500)
               .attr('stroke-dashoffset', 0);
           }
@@ -175,7 +179,7 @@ class GeneratingDiagram {
             .attr('stroke', 'red')
             .attr('r', 0)
             .transition()
-            .delay((_, i) => delay ? 1000 * i / SAMPLES.length + 3000 : 0)
+            .delay((_, i) => delay ? 1000 * i / SAMPLES.length : 0)
             .duration(delay ? 500 : 0)
             .attr('r', 2),
         update => update.attr('r', 2)
@@ -183,7 +187,6 @@ class GeneratingDiagram {
   }
 
   createTrace(delay: boolean) {
-    console.log(TRACE)
     return this.traceSel
       .selectAll('span')
       .data(TRACE)
@@ -198,113 +201,120 @@ class GeneratingDiagram {
       );
   }
 
-  preStage() {
+  codeStage0() {
+    this.codeSel.transition().duration(250).style('height', '65px');
+    this.codeSel.select('.hljs').transition().duration(250).style('top', '-73px');
+  }
+
+  codeStage1() {
+    this.codeSel.transition().duration(250).style('height', '127px');
+    this.codeSel.select('.hljs').transition().duration(250).style('top', '-97px');
+  }
+
+  codeStage2() {
+    this.codeSel.transition().duration(250).style('height', '127px');
+    this.codeSel.select('.hljs').transition().duration(250).style('top', '-168px');
+  }
+
+  codeStage3() {
+    this.codeSel.transition().duration(250).style('height', '315px');
+    this.codeSel.select('.hljs').transition().duration(250).style('top', '0px');
+  }
+
+  plotStage0() {
+    this.plotSel.style('display', 'flex');
+    this.plotSel.selectChild().style('visibility', 'hidden');
     this.plotSel.select('.amplitudes').selectAll('circle').remove()
     this.plotSel.select('.paths').selectAll('path').remove()
     this.plotSel.select('.measurements').selectAll('circle').remove()
-    this.traceSel.style('display', 'none');
-    this.plotSel.style('display', 'flex');
-    this.traceSel.selectAll('span').remove();
   }
 
-  stage0() {
-    // make sure the code block is oriented correctly
-    this.codeSel.transition().duration(250).style('height', '65px');
-    this.codeSel.select('.hljs').transition().duration(250).style('top', '-73px');
-
-    // make sure the trace is hidden
-    this.traceSel.style('display', 'none');
-
-    // make sure the plot is visible
+  plotStage1() {
     this.plotSel.style('display', 'flex');
-
-    // produce the amplitude dots
+    this.plotSel.selectChild().style('visibility', 'visible');
     this.createAmplitudes(true);
-
-    // remove the paths
     this.plotSel.select('.paths').selectAll('path').remove()
-
-    // remove the measurements
     this.plotSel.select('.measurements').selectAll('circle').remove()
-
-    // remove the trace
-    this.traceSel.selectAll('span').remove();
   }
 
-  stage1() {
-    // make sure the code block is oriented correctly
-    this.codeSel.transition().duration(250).style('height', '127px');
-    this.codeSel.select('.hljs').transition().duration(250).style('top', '-97px');
-
-    // make sure the trace is hidden
-    this.traceSel.style('display', 'none');
-
-    // make sure the plot is visible
+  plotStage2() {
     this.plotSel.style('display', 'flex');
-
-    // produce the amplitude dots
+    this.plotSel.selectChild().style('visibility', 'visible');
     this.createAmplitudes(false);
-
-    // produce the paths
     this.createPaths(true);
-
-    // remove the measurements
     this.plotSel.select('.measurements').selectAll('circle').remove()
-
-    // remove the trace
-    this.traceSel.selectAll('span').remove();
   }
 
-  stage2() {
-    // make sure the code block is oriented correctly
-    this.codeSel.transition().duration(250).style('height', '127px');
-    this.codeSel.select('.hljs').transition().duration(250).style('top', '-168px');
-
-    // make sure the trace is hidden
-    this.traceSel.style('display', 'none');
-
-    // make sure the plot is visible
+  plotStage3() {
     this.plotSel.style('display', 'flex');
-
-    // produce the amplitude dots
+    this.plotSel.selectChild().style('visibility', 'visible');
     this.createAmplitudes(false);
-
-    // produce the paths
     this.createPaths(false);
-
-    // produce the measurements
     this.createMeasurements(true);
+  }
 
-    // remove the trace
+  plotStage4() {
+    this.plotSel.style('display', 'none');
+    this.plotSel.selectChild().style('visibility', 'visible');
+    this.createAmplitudes(false);
+    this.createPaths(false);
+    this.createMeasurements(false);
+  }
+
+  traceStage0() {
+    this.traceSel.style('display', 'none');
     this.traceSel.selectAll('span').remove();
   }
 
-  stage3() {
-    // make sure the code block is oriented correctly
-    this.codeSel.transition().duration(250).style('height', '315px');
-    this.codeSel.select('.hljs').transition().duration(250).style('top', '0px');
-    
-    // make sure the trace is visible
+  traceStage1() {
     this.traceSel.style('display', 'block');
-
-    // make sure the plot is hidden
-    this.plotSel.style('display', 'none');
-
-    // produce the amplitude dots
-    this.createAmplitudes(false);
-
-    // produce the paths
-    this.createPaths(false);
-
-    // produce the measurements
-    this.createMeasurements(false);
-
-    // produce trace
     this.createTrace(true);
   }
 
+  stage0() {
+    this.codeStage0();
+    this.plotStage0();
+    this.traceStage0();
+  }
+
+  stage1() {
+    this.codeStage0();
+    this.plotStage1();
+    this.traceStage0();
+  }
+
+  stage2() {
+    this.codeStage1();
+    this.plotStage1();
+    this.traceStage0();
+  }
+
+  stage3() {
+    this.codeStage1();
+    this.plotStage2();
+    this.traceStage0();
+  }
+
+  stage4() {
+    this.codeStage2();
+    this.plotStage2();
+    this.traceStage0();
+  }
+
+  stage5() {
+    this.codeStage2();
+    this.plotStage3();
+    this.traceStage0();
+  }
+
+  stage6() {
+    this.codeStage3();
+    this.plotStage4();
+    this.traceStage1();
+  }
+
   static get LAST_STAGE() {
-    return 3;
+    return 6;
   }
 }
 
@@ -346,11 +356,17 @@ function GeneratingDiagramPlugin() {
           if (indexh > slideNum) return GeneratingDiagram.LAST_STAGE;
           switch (indexf) {
             case -1: return -1;
-            case 0: return 0;
-            case 1: return 1;
-            case 2: return 2;
-            case 3: return 2;
-            case 4: return 3;
+            case 0: return -1;
+            case 1: return 0;
+            case 2: return 1;
+            case 3: return 1;
+            case 4: return 2;
+            case 5: return 3;
+            case 6: return 3;
+            case 7: return 4;
+            case 8: return 5;
+            case 9: return 5;
+            case 10: return 6;
           }
         };
         const startStage = getStage(deck.getState());
