@@ -16,15 +16,34 @@ module.exports = {
   },
   module: {
     rules: [
-      { test: /\.s?(a|c)ss$/, use: [MiniCssExtractPlugin.loader, 'css-loader', 'sass-loader'] },
       { 
-        test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/, 
-        type: 'asset/resource',
+        test: /\.(j|t)s$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+          options: { presets: ['@babel/preset-env', '@babel/preset-typescript'] },
+        },
       },
-      {
-        test: /\.(png|jpg)$/,
-        type: 'asset/resource',
+      { 
+        test: /\.s?(a|c)ss$/, 
+        use: [
+          MiniCssExtractPlugin.loader, 
+          {
+            loader: 'css-loader', 
+            options: {
+              esModule: true,
+              modules: {
+                auto: true,
+                namedExport: true,
+              },
+            },
+          },
+          'sass-loader'
+        ] 
       },
+      { test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/, type: 'asset/resource' },
+      { test: /\.(png|jpg)$/, type: 'asset/resource' },
+      { test: /\.(jl|txt)$/, type: 'asset/source' },
     ],
   },
   plugins: [
@@ -35,6 +54,6 @@ module.exports = {
     })
   ],
   resolve: {
-    extensions: ['.js'],
+    extensions: ['.js', '.ts'],
   },
 };

@@ -1,0 +1,44 @@
+.container {
+  width: calc( 100% - 4px );
+  height: calc( 100% - 4px );
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #2e2e2e;
+  overflow-y: hidden;
+}
+
+.container > .code-container {
+  margin: 0;
+  overflow-y: hidden;
+  position: relative;
+}
+
+.code-container > .code {
+  width: 100%;
+  position: absolute;
+  white-space: pre;
+  text-align: left;
+  line-height: 24px;
+  font-size: 18px;
+}
+
+
+.container .trace {
+  background: black;
+  color: #8fbd94;;
+  flex: 1;
+  margin: 0;
+  font-size: 11px;
+  text-align: left;
+  font-family: mono;
+}
+
+.container .plot {
+  background: #96a4a6;
+  flex: 1;
+  display: flex;
+}
+
+.container .plot > svg {
+  margin: auto;
+}

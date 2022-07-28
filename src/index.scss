@@ -7,6 +7,10 @@
   --r-heading-text-transform: none;
 }
 
+blockquote.fat {
+  width: 100%;
+}
+
 .about-me {
   width: 500px;
   height: 500px;
@@ -18,6 +22,35 @@
   position: absolute; 
   top: 0; 
   left: 0;
+}
+
+.rainbow-text {
+  background-image: linear-gradient(to top, lightgreen, pink, lightblue, orange, aqua);
+  background-clip: text;
+  color: transparent;
+}
+
+blockquote.generative-modeling-split {
+  display: flex;
+  height: 470px;
+  padding: 0.1em;
+}
+
+blockquote.generative-modeling-split > ul {
+  width: calc( 45% - 0.1em );
+}
+
+blockquote.generative-modeling-split ul {
+  padding-left: 0em;
+  margin-left: 1em;
+  display: flex;
+  justify-content: space-evenly;
+  flex-direction: column;
+}
+
+#generating-diagram {
+  position: relative;
+  width: calc( 55% - 0.1em );
 }
 
 .uncertain-quantities {
@@ -54,11 +87,10 @@
 
 .example-grid {
   display: grid;
-  grid-template-columns: repeat(2, 150px 200px) 150px;
-  grid-template-rows: 150px 200px 150px;
   gap: 10px 10px;
   width: 890px;
   margin: 0 auto;
+  position: relative;
 }
 
 .example-grid > * {
@@ -67,9 +99,10 @@
 }
 
 .example-grid > .circle {
-  color: black;
-  background: white;
-  border: 10px solid var(--r-link-color);
+  background: rgba(255, 255, 255, 0.05);
+  box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.2);
+  color: pink;
+  border: 2px solid white;
   border-radius: 100%;
-  padding: 20px;
+  padding: 2rem;
 }
