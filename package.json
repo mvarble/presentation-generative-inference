@@ -2,7 +2,7 @@
   "name": "@mvarble/toyon-presentation",
   "scripts": {
     "develop": "export NODE_ENV=development; npx webpack serve",
-    "build": "export NODE_ENV=production; npx webpack",
+    "build": "rm -r output/* && export NODE_ENV=production; npx webpack",
     "deploy": "npx gh-pages -d output/"
   },
   "dependencies": {

@@ -45,14 +45,14 @@ module.exports = {
         test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/, 
         type: 'asset/resource',
         generator: {
-          filename: path.join('fonts', '[name]'),
+          filename: path.join('fonts', '[name][ext]'),
         },
       },
       { 
         test: /\.(png|jpg)$/, 
         type: 'asset/resource',
         generator: {
-          filename: path.join('images', '[name]'),
+          filename: path.join('images', '[name][ext]'),
         },
       },
       { test: /\.(jl|txt)$/, type: 'asset/source' },
