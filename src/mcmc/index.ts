@@ -10,6 +10,32 @@ import { container, proposal, accepted, rejected } from './index.module.css';
 const NO_PARENT_MESSAGE = 'MCMCDiagram: `parentElm` is not in deck';
 
 // sample data
+const REAL_PROPOSALS = require('./chain.json');
+const FAKE_PROPOSALS = [
+  { x: 1.1, y: 4, accept: true },
+  ...Array.from({ length: 20 }).map(() => {
+    const r = Math.random()
+    const theta = 2 * Math.PI * Math.random()
+    return { x: 1.1 + r * Math.cos(theta), y: 4 + r * Math.sin(theta), accept: false };
+  })
+];
+const PROPOSALS = [...REAL_PROPOSALS, ...FAKE_PROPOSALS];
+const SKIP_SPOT = 25;
+
+// viewport data
+const HEIGHT = 200;
+const XYRATIO = 1.8;
+const WIDTH = HEIGHT * XYRATIO;
+const XSCALE = d3.scaleLinear()
+  .domain([-4, 4])
+  .range([0, WIDTH]);
+const YSCALE = d3.scaleLinear()
+  .domain([-4, 4])
+  .range([HEIGHT, 100]);
+
+/**
+ * helper functions for interpretting chain/proposals
+ */
 interface Proposal {
   x: number;
   y: number;
@@ -22,42 +48,53 @@ interface ChainLink {
   amount?: number;
 }
 
-const PROPOSALS: Proposal[] = [
-  { x: 0, y: 0, accept: true },
-  { x: 3.0, y: 2.1, accept: true },
-  { x: 3.1, y: 2.5, accept: true },
-  { x: 7.1, y: 1.0, accept: false },
-  { x: 2.1, y: 2.1, accept: true },
-  { x: 2.08, y: 1.1, accept: true },
-  { x: 2.12, y: -1.1, accept: true },
-  { x: 1.8, y: -1.3, accept: true },
-  { x: -0.5, y: -1.8, accept: false },
-  { x: 0.7, y: -2.3, accept: true },
-  { x: 4.0, y: -2.3, accept: true },
-  { x: 4.0 + 3 * Math.cos(0.5), y: -2.3 + 3 * Math.sin(0.5), accept: false },
-  { x: 4.0 + 3.1 * Math.cos(1.5), y: -2.3 + 3.1 * Math.sin(1.5), accept: false },
-  { x: 4.0 + 3.9 * Math.cos(3.5), y: -2.3 + 3.9 * Math.sin(3.5), accept: false },
-  { x: 4.0 + 3.8 * Math.cos(2.3), y: -2.3 + 3.8 * Math.sin(2.3), accept: false },
-  { x: 4.0 + 3.2 * Math.cos(6.9), y: -2.3 + 3.2 * Math.sin(6.9), accept: false },
-  { x: 4.0 + 3.2 * Math.cos(8.1), y: -2.3 + 3.2 * Math.sin(8.1), accept: false },
-  { x: 4.0 + 3.2 * Math.cos(9.9), y: -2.3 + 3.2 * Math.sin(9.9), accept: false },
-  { x: 4.0 + 3.2 * Math.cos(123.9), y: -2.3 + 3.2 * Math.sin(123.9), accept: false },
-  { x: 4.0 + 3.2 * Math.cos(128.8), y: -2.3 + 3.2 * Math.sin(128.8), accept: false },
-  { x: 4.0 + 3.2 * Math.cos(32.1), y: -2.3 + 3.2 * Math.sin(32.1), accept: false },
-  { x: 4.0 + 3.2 * Math.cos(67.8), y: -2.3 + 3.2 * Math.sin(67.8), accept: false },
-  { x: 4.0 + 3.2 * Math.cos(61.29), y: -2.3 + 3.2 * Math.sin(61.29), accept: false },
-];
+function getChain(proposals: Proposal[], preRejection: boolean): ChainLink[] {
+  const chain: ChainLink[] = [];
+  proposals.forEach(({ x, y, accept }, i) => {
+    if (preRejection && i == proposals.length - 1) {
+      chain.push({ x, y });
+    } else if (i === 0) {
+      chain.push({ x, y, amount: 1 });
+    } else if (accept) {
+      chain.push({ x, y, amount: 1 });
+    } else {
+      getLastSuccess(chain).amount++;
+      chain.push({ x, y, amount: 0 });
+    }
+  });
+  return chain;
+}
 
-// viewport data
-const HEIGHT = 200;
-const XYRATIO = 1.8;
-const WIDTH = HEIGHT * XYRATIO;
-const XSCALE = d3.scaleLinear()
-  .domain([-10, 10])
-  .range([0, WIDTH]);
-const YSCALE = d3.scaleLinear()
-  .domain([-10, 10])
-  .range([HEIGHT, 0]);
+function getMaxAmount(chain: ChainLink[]): number {
+  return chain.reduce((M, chainLink) => Math.max(M, chainLink.amount || 0), -Infinity);
+}
+
+function getLastSuccess(chain: ChainLink[]): ChainLink {
+  return chain.slice(0).reverse().find(p => p.amount);
+}
+
+function chainLinkColor(maxAmount: number): (chainLink: ChainLink) => string {
+  // @ts-ignore
+  return (chainLink) => (
+    typeof chainLink.amount === 'number'
+    ? (
+      d3.scaleLinear()
+      .domain([0, maxAmount])
+      // @ts-ignore
+      .range([d3.color('purple'), d3.color('yellow')])
+      (chainLink.amount)
+    )
+    : d3.color('white')
+  );
+}
+
+function chainLinkOpacity(maxAmount: number): (chainLink: ChainLink) => number {
+  return (chainLink) => (
+    typeof chainLink.amount === 'number'
+    ? chainLink.amount / maxAmount
+    : 0.5
+  );
+}
 
 /**
  * Configuration of the MCMCDiagram component
@@ -71,60 +108,19 @@ interface MCMCDiagramConfig {
 /**
  * turn proposal data into chain data
  */
-function getChain(proposals: Proposal[], preRejection: boolean): ChainLink[] {
-  const chain: ChainLink[] = [];
-  proposals.forEach(({ x, y, accept }, i) => {
-    if (preRejection && i == proposals.length - 1) {
-      chain.push({ x, y });
-    } else if (i === 0) {
-      chain.push({ x, y, amount: 1 });
-    } else if (accept) {
-      chain.push({ x, y, amount: 1 });
-    } else {
-      lastSuccess(chain).amount++;
-      chain.push({ x, y, amount: 0 });
-    }
-  });
-  return chain;
-}
-
-enum State {
-  Pending,
-  Accepted,
-  Rejected,
-}
-
-function lastSuccess(chain: ChainLink[]): ChainLink {
-  return chain.slice(0).reverse().find(p => p.amount);
-}
-
-function chainLinkState({ amount }: ChainLink): State {
-  return (
-    typeof amount == 'number'
-    ? (amount ? State.Accepted : State.Rejected)
-    : State.Pending
-  );
-}
-
-function chainLinkColor(chainLink: ChainLink): string {
-  switch (chainLinkState(chainLink)) {
-    case State.Pending: return 'lightskyblue';
-    case State.Accepted: return 'lightgreen';
-    case State.Rejected: return 'pink';
-  }
-}
-
 /**
  * This class will create d3 animations for the `mcmc` slide of the presentation.
  */
 class MCMCDiagram {
 
   stage: number;
+  parentElm: HTMLElement;
   svgSel: d3.Selection<SVGSVGElement, ChainLink[], null, null>;
 
   constructor({ parentElm, startStage }: MCMCDiagramConfig) {
     // we necessarily need a parent element for the diagram to work
     if (!parentElm) throw new Error(NO_PARENT_MESSAGE);
+    this.parentElm = parentElm;
 
     // create the container element and append it to the parent
     const containerSel = d3.create('div').attr('class', container);
@@ -140,12 +136,57 @@ class MCMCDiagram {
     if (stage === this.stage) return;
     this.stage = stage;
 
+
+    if (this.stage === 1) this.showAlgorithm();
+    else this.showDiagram();
+  }
+
+  showAlgorithm() {
+    // grow the font size of the algorithm
+    d3.select(this.parentElm)
+      .transition()
+      .duration(500)
+      .style('font-size', '26px');
+
+    // remove the chain
+    this.svgSel
+      .selectAll('circle')
+      .data([])
+      .exit()
+      .transition()
+      .duration(500)
+      .attr('r', 0)
+      .remove();
+  }
+
+  showDiagram() {
+    // shrink the font size of the algorithm
+    d3.select(this.parentElm)
+      .transition()
+      .duration(500)
+      .style('font-size', '18px');
+
     // get the chain data
-    const chainLength = Math.ceil(stage / 2);
-    const preRejection = stage % 2 == 1;
+    const chainLength = Math.ceil(this.stage / 2);
+    const preRejection = this.stage % 2 == 1;
     const chain = getChain(PROPOSALS.slice(0, chainLength), preRejection);
 
-    // enter/update the d3 guys
+    // get the chain metadata
+    const maxAmount = getMaxAmount(chain);
+    const color = chainLinkColor(maxAmount);
+    const opacity = chainLinkOpacity(maxAmount);
+    const lastSuccess = getLastSuccess(chain);
+    const strokeWidth = (chainLink: ChainLink) => chainLink.amount === 0 ? 0.1 : 1;
+    const endX = (chainLink: ChainLink) => XSCALE(chainLink.x);
+    const endY = (chainLink: ChainLink) => YSCALE(chainLink.y);
+    const startX = (chainLink: ChainLink, index: number) => (
+      index > 0 ? XSCALE(lastSuccess.x) : endX(chainLink)
+    );
+    const startY = (chainLink: ChainLink, index: number) => (
+      index > 0 ? YSCALE(lastSuccess.y) : endY(chainLink)
+    );
+
+    // enter/update the dom components associated with the chain
     this.svgSel
       .selectAll('circle')
       .data(chain)
@@ -153,29 +194,31 @@ class MCMCDiagram {
         enter => (
           enter
           .append('circle')
-          .attr('fill', chainLinkColor)
-          .attr('fill-opacity', 0.5)
-          .attr('stroke', chainLinkColor)
-          .attr('stroke-width', 1)
-          .attr('cx', (d,i) => i > 0 ? XSCALE(lastSuccess(chain).x) : XSCALE(d.x))
-          .attr('cy', (d,i) => i > 0 ? YSCALE(lastSuccess(chain).y) : YSCALE(d.y))
+          .attr('fill', color)
+          .attr('fill-opacity', opacity)
+          .attr('stroke', color)
+          .attr('stroke-width', strokeWidth)
+          .attr('cx', startX)
+          .attr('cy', startY)
           .attr('r', 0)
           .transition()
           .duration(500)
-          .attr('cx', d => XSCALE(d.x))
-          .attr('cy', d => YSCALE(d.y))
-          .attr('r', d => 5 * (d.amount || 1))
+          .attr('cx', endX)
+          .attr('cy', endY)
+          .attr('r', 5)
         ),
         update => (
           update
           .transition()
           .duration(250)
-          .attr('fill', chainLinkColor)
-          .attr('stroke', chainLinkColor)
-          .attr('cx', d => XSCALE(d.x))
-          .attr('cy', d => YSCALE(d.y))
-          .attr('r', d => 5 * (d.amount || 1))
-        )
+          .attr('fill', color)
+          .attr('fill-opacity', opacity)
+          .attr('stroke', color)
+          .attr('stroke-width', strokeWidth)
+          .attr('cx', endX)
+          .attr('cy', endY)
+          .attr('r', 5)
+        ),
       )
 
     // use d3 to animate between stages
@@ -221,9 +264,14 @@ function MCMCDiagramPlugin() {
 
         // establish the current stage of the animation
         const getStage = ({ indexh, indexf }) => {
-          if (indexh < slideNum) return 2;
+          if (indexh < slideNum) return 1;
           if (indexh > slideNum) return MCMCDiagram.LAST_STAGE;
-          return Math.max(2, Math.min(indexf+3, MCMCDiagram.LAST_STAGE));
+          const preSkipStage = Math.max(1, Math.min(indexf+2, MCMCDiagram.LAST_STAGE));
+          if (preSkipStage < SKIP_SPOT) {
+            return preSkipStage;
+          } else {
+            return 2 * REAL_PROPOSALS.length + (preSkipStage - SKIP_SPOT);
+          }
         };
         const startStage = getStage(deck.getState());
 

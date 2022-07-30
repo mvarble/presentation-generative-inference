@@ -132,17 +132,17 @@
             <div style="padding:1em">
               <div style="position: relative; display: flex; justify-content: space-evenly; align-items: center; width: 100%; flex-wrap: wrap; font-size: 25px;">
                 <span style="flex-shrink: 0; padding: 0.25em" class="fragment fade-in-then-semi-out">
-                  $\displaystyle ({\color{yellow}\mu},{\color{pink}f}) {\color{lightgreen}\mapsto} \int_\Omega f(x) \mu({\rm d}x), $
+                  $\displaystyle ({\color{yellow}\mu},{\color{pink}f}) {\color{lightgreen}\mapsto} \int_\mathbb{X} f(x) \mu({\rm d}x), $
                 </span>
                 <span style="flex-shrink: 0; padding: 0.25em" class="fragment fade-in-then-semi-out">
                   $\displaystyle ({\color{yellow}\mu},{\color{pink}T}) {\color{lightgreen}\mapsto} T_\#\mu = \Big(\Gamma \mapsto \mu(T^{-1}\Gamma) \Big) $
                 </span>
                 <span class="fragment fade-in-then-semi-out" style="padding-left: 300px;">Other notation: &nbsp;$X_\#\mu = \mu(X \in \cdot) = \mu_X$</span>
                 <span style="flex-shrink: 0; padding: 0.25em" class="fragment fade-in-then-semi-out">
-                  $\displaystyle ({\color{yellow}\mu},{\color{lightblue}\kappa}) {\color{lightgreen}\mapsto} \kappa\ast\mu = \Big( \Gamma \mapsto \int_\Omega \kappa(x, \Gamma) \mu({\rm d}x) \Big)$
+                  $\displaystyle ({\color{yellow}\mu},{\color{lightblue}\kappa}) {\color{lightgreen}\mapsto} \kappa\ast\mu = \Big( \Gamma \mapsto \int_\mathbb{X} \kappa(x, \Gamma) \mu({\rm d}x) \Big)$
                 </span>
                 <span style="flex-shrink: 0; padding: 0.25em" class="fragment fade-in-then-semi-out">
-                  $\displaystyle ({\color{lightblue}\kappa}, {\color{pink}f}) {\color{lightgreen}\mapsto} \kappa\cdot f = \Big( x \mapsto \int_\Omega f(y) \kappa(x, {\rm d}y) \Big)$
+                  $\displaystyle ({\color{lightblue}\kappa}, {\color{pink}T}) {\color{lightgreen}\mapsto} T_\#\kappa = \Big( \Gamma \mapsto \kappa\big(T(x), T^{-1}\Gamma\big) \Big)$
                 </span>
                 <span style="flex-shrink: 0; padding: 0.25em" class="fragment fade-in-then-semi-out">
                   $\displaystyle ({\color{yellow}\mu},{\color{pink}X},{\color{pink} Y}) {\color{lightgreen}\mapsto} \mu_{X|Y}, \quad \mu_{(X,Y)} = \mu_{X|Y}\ast \mu_Y$
@@ -190,7 +190,7 @@
                   <div>
                     <span style="font-family: mono; padding-left: 1em; font-size: 20px">
                       i.e. ${\color{pink}x} \sim {\color{yellow}\nu}$ and ${\color{pink}y} \sim \color{lightgreen}\kappa(\color{pink}x,\color{lightgreen}\cdot)$
-                    </tt>
+                    </span>
                   </div>
                 </li>
               </div>
@@ -497,8 +497,8 @@
               <li class="fragment fade-in-then-semi-out">
                 <span style="color:orange">MCMC</span>
                 Construct a Markov chain with proposal kernel 
-                $$Q({\rm d}x'|x) = q(x'|x){\rm d}x'$$
-                and rejection scheme to ensure the invariant distribution is $\mu_{X|Y}$.
+                $$\color{lightskyblue} Q({\rm d}x'|x) = q(x'|x){\rm d}x'$$
+                and rejection scheme to ensure the invariant distribution is $\color{lightgreen}\mu_{X|Y}$.
               </li>
             </ul>
           </blockquote>
@@ -506,66 +506,79 @@
         <!-- slide 11 -->
         <section>
           <h2>Markov-chain Monte Carlo</h2>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <span class="fragment"></span>
-          <div id="mcmc-diagram">
-            <div style="font-size: 18px">
+          <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span>  <span class="fragment"></span> <span class="fragment"></span>
+          <span class="fragment fade-in-then-out" style="color:lightgreen; position: absolute; top: 420px">Do we get the idea?</span>
+          <span class="fragment"></span>  <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span> <span class="fragment"></span><span class="fragment"></span><span class="fragment"></span>
+          <div id="mcmc-diagram" style="font-size: 26px">
+            <div>
               <div style="display: flex">
-                <span style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>1</strong></span>
-                <span>Initialize state $x_0$</span>
+                <span style="width: 1.5em; text-align: right; margin-right: 1em;">
+                  <strong>1</strong>
+                </span>
+                <span>Initialize state $\color{orange} x_0$</span>
               </div>
               <div style="display: flex">
-                <span style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>2</strong></span>
-                <span><strong style="margin-right: 0.5em">for</strong>$k = 0, \ldots, L-1$<strong style="margin-left: 0.5em">do</strong></span>
+                <span style="width: 1.5em; text-align: right; margin-right: 1em;">
+                  <strong>2</strong>
+                </span>
+                <span>
+                  <strong style="margin-right: 0.5em">for</strong>
+                  <span>$k = 0, \ldots, L-1$</span>
+                  <strong style="margin-left: 0.5em">do</strong>
+                </span>
               </div>
               <div style="display: flex">
-                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>3</strong></tt>
+                <span style="width: 1.5em; text-align: right; margin-right: 1em;">
+                  <strong>3</strong>
+                </span>
                 <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
-                <span>sample proposal $\tilde x_{k+1} \sim Q(\cdot|x_k)$</span>
+                <span>sample proposal ${\color{orange} \tilde x_{k+1} }\sim {\color{lightskyblue}Q(\cdot|}{\color{orange}x_k}\color{lightskyblue})$</span>
               </div>
               <div style="display: flex">
-                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>4</strong></tt>
+                <span style="width: 1.5em; text-align: right; margin-right: 1em;">
+                  <strong>4</strong>
+                </span>
                 <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
                 <span>
-                  sample $a_k \sim U(0,1)$ and set the following.
+                  sample ${\color{orange}a_k} \sim {\color{yellow}U(0,1)}$ and set the following.
                   $$
                     \begin{gathered}
-                      \alpha(x_k, \tilde x_{k+1}) = \min\left\{ 1, \frac{p_X(\tilde x_{k+1})p_{Y|X}(y|\tilde x_{k+1}) q(x_k|\tilde x_{k+1})}{p_X(x_k)p_{Y|X}(y|x_k) q(\tilde x_{k+1}|x_k)} \right\}   \\
-                      x_{k+1} = \left\{ \begin{array}{ll} \tilde x_{k+1} & a_k \leq \alpha(x_k,\tilde x_{k+1}) \\ x_k &  \text{ otherwise} \end{array}\right.
+                      {\color{lightgreen}a(}
+                      {\color{orange}x_k}
+                      , 
+                      {\color{orange}\tilde x_{k+1}}
+                      {\color{lightgreen})} 
+                      = \min\left\{ 1, 
+                        \frac{
+                          {\color{lightgreen}p_X(}
+                          {\color{orange}\tilde x_{k+1}}
+                          {\color{lightgreen})p_{Y|X}(}
+                          {\color{pink}y}
+                          {\color{lightgreen}|}
+                          {\color{orange}\tilde x_{k+1}}
+                          {\color{lightgreen})}
+                          {\color{lightskyblue} q(}
+                          {\color{orange}x_k}
+                          {\color{lightskyblue}|}
+                          {\color{orange}\tilde x_{k+1}}
+                          {\color{lightskyblue})}
+                        }
+                        {
+                          {\color{lightgreen}p_X(}
+                          {\color{orange}x_{k+1}}
+                          {\color{lightgreen})p_{Y|X}(}
+                          {\color{pink}y}
+                          {\color{lightgreen}|}
+                          {\color{orange}x_{k+1}}
+                          {\color{lightgreen})}
+                          {\color{lightskyblue} q(}
+                          {\color{orange}\tilde x_{k+1}}
+                          {\color{lightskyblue}|}
+                          {\color{orange}x_k}
+                          {\color{lightskyblue})}
+                        }
+                      \right\} \\
+                      {\color{orange} x_{k+1}} = \left\{ \begin{array}{ll} {\color{orange} \tilde x_{k+1}} & {\color{orange}a_k} \leq {\color{lightgreen}a(}{\color{orange}x_k},{\color{orange}\tilde x_{k+1}}{\color{lightgreen})} \\ \color{orange} x_k &  \text{ otherwise} \end{array}\right.
                     \end{gathered}
                   $$
                 </span>
@@ -575,90 +588,120 @@
         </section>
         <!-- slide 12 -->
         <section>
-          <h2>A cool example</h2>
-          <p>Learn a proposal kernel through variational transport methods</p>
-          <blockquote class="fat" style="font-size: 12pt">
-            <div style="display: flex; flex-direction: column; margin: 0 1em 0.5em 1em; text-align: left">
-              <div style="display: flex; margin: 0.5em 0 0.5em 0.5em">
-                <em style="margin-right: 1em">Input.</em>
-                <span>Initial state $x_0$, inital parameter $\overline \gamma_0 \in \mathcal A$, reference proposal $Q_r$, integers $K_U$ and $L$.<span>
-              </div>
-              <div style="display: flex; margin: 0.5em 0 0.5em 0.5em">
-                <em style="margin-right: 1em">Output.</em>
-                <span>MCMC samples $\{x^{(1)}, \ldots, x^{(L)}\}$ of the target distribution $\mu_x$.</span>
+          <h2><span style="text-decoration: underline">transport map</span> Markov-chain Monte Carlo</h2>
+          <p>Learn a proposal kernel ${\color{pink} T(\cdot},\color{aqua}\alpha\color{pink})_\#\color{lightskyblue}Q$ through variational method</p>
+          <blockquote class="fat">
+            <div style="font-size: 22px; text-align: left">
+              <div style="display: flex">
+                <span style="width: 1.5em; text-align: right; margin-right: 1em;">
+                  <strong>1</strong>
+                </span>
+                <span>Initialize state $\color{orange} x_0$ and parameter $\color{aqua}\alpha$</span>
               </div>
               <div style="display: flex">
-                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>1</strong></tt>
-                <span>Set state $x^{(1)} = x_0$</span>
-              </div>
-              <div style="display: flex" >
-                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>2</strong></tt>
-                <span>Set parameters $\overline\gamma^{(1)} = \overline\gamma_0$</span>
-              </div>
-              <div style="display: flex" >
-                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>3</strong></tt>
-                <span><strong style="margin-right: 0.5em">for</strong>$k \leftarrow 1 \ldots L-1$<strong style="margin-left: 0.5em">do</strong></span>
-              </div>
-              <div style="display: flex" >
-                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>4</strong></tt>
-                <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
-                <span>Compute the reference state, $r^{(k)} = T(x^{(k)}; \overline \gamma^{(k)})$</span>
-              </div>
-              <div style="display: flex" >
-                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>5</strong></tt>
-                <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
-                <span>Sample the reference proposal $r' \sim Q_r(\cdot|r^{(k)})$</span>
-              </div>
-              <div style="display: flex" >
-                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>6</strong></tt>
-                <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
-                <span>Compute the target proposal sample, $x' = T^{-1}(r'; \overline \gamma^{(k)})$</span>
-              </div>
-              <div style="display: flex">
-                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>7</strong></tt>
-                <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
+                <span style="width: 1.5em; text-align: right; margin-right: 1em;">
+                  <strong>2</strong>
+                </span>
                 <span>
-                  Calculate the acceptance probability:
-                  $$ \alpha = \min\Big\{  1, \frac{\pi(x')q_r\big(r^{(k)} | r' \big)\big|\det\nabla T(x^{(k)})\big|}{\pi(x)q_r\big(r' | r^{(k)} \big)\big|\det\nabla T(x')\big|}\Big\} $$
+                  <strong style="margin-right: 0.5em">for</strong>
+                  <span>$k = 0, \ldots, L-1$</span>
+                  <strong style="margin-left: 0.5em">do</strong>
                 </span>
               </div>
               <div style="display: flex">
-                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>8</strong></tt>
+                <span style="width: 1.5em; text-align: right; margin-right: 1em;">
+                  <strong>3a</strong>
+                </span>
                 <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
-                <span>Set $x^{(k+1)}$ to $x'$ with probability $\alpha$; else set $x^{(k+1)}$ to $x^{(k)}$</span>
+                <span>compute reference ${\color{orange} r_k } = {\color{pink}T(}{\color{orange}x_k},{\color{aqua}\alpha}\color{pink})$</span>
               </div>
               <div style="display: flex">
-                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>9</strong></tt>
+                <span style="width: 1.5em; text-align: right; margin-right: 1em;">
+                  <strong>3b</strong>
+                </span>
                 <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
-                <span><strong style="margin-right: 0.5em">if</strong>$(k \mod K_U) = 0$<strong style="margin-left: 0.5em">then</strong></span>
+                <span>sample proposal reference ${\color{orange} \tilde r_{k+1} }\sim {\color{lightskyblue}Q(\cdot|}{\color{orange}r_k}\color{lightskyblue})$</span>
               </div>
               <div style="display: flex">
-                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>10</strong></tt>
+                <span style="width: 1.5em; text-align: right; margin-right: 1em;">
+                  <strong>3c</strong>
+                </span>
                 <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
-                <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
-                <span><strong style="margin-right: 0.5em">for</strong>$i \leftarrow 1\ldots d$<strong style="margin-left: 0.5em">do</strong></span>
+                <span>evaluate proposal ${\color{orange} \tilde x_{k+1} } = {\color{pink}T^{-1}(}{\color{orange}x_k},\color{aqua}\alpha\color{pink})$</span>
               </div>
               <div style="display: flex">
-                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>11</strong></tt>
+                <span style="width: 1.5em; text-align: right; margin-right: 1em;">
+                  <strong>4</strong>
+                </span>
                 <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
-                <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
-                <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
-                <span>Update $\overline \gamma_i^{(k+1)}$ by optimizing $\gamma \rightarrow C\big(T(\cdot; \gamma)\big)$ for samples $\{x^{(1)},\ldots,x^{(k)}\}$</span>
+                <span>
+                  sample ${\color{orange}a_k} \sim {\color{yellow}U(0,1)}$ and set the following.
+                  $$
+                    \begin{gathered}
+                      {\color{lightgreen}a(}
+                      {\color{orange}x_k}
+                      , 
+                      {\color{orange}\tilde x_{k+1}}
+                      {\color{lightgreen})} 
+                      = \min\left\{ 1, 
+                        \frac{
+                          {\color{lightgreen}p_X(}
+                          {\color{orange}\tilde x_{k+1}}
+                          {\color{lightgreen})p_{Y|X}(}
+                          {\color{pink}y}
+                          {\color{lightgreen}|}
+                          {\color{orange}\tilde x_{k+1}}
+                          {\color{lightgreen})}
+                          {\color{lightskyblue} q(}
+                          {\color{orange}r_k}
+                          {\color{lightskyblue}|}
+                          {\color{orange}\tilde r_{k+1}}
+                          {\color{lightskyblue})}
+                          {\color{lightgreen}|\operatorname{det}\nabla T(}
+                          {\color{orange}x_k}
+                          {\color{lightgreen},}
+                          {\color{aqua}\alpha}
+                          {\color{lightgreen})|}
+                        }
+                        {
+                          {\color{lightgreen}p_X(}
+                          {\color{orange}x_{k+1}}
+                          {\color{lightgreen})p_{Y|X}(}
+                          {\color{pink}y}
+                          {\color{lightgreen}|}
+                          {\color{orange}x_{k+1}}
+                          {\color{lightgreen})}
+                          {\color{lightskyblue} q(}
+                          {\color{orange}\tilde r_{k+1}}
+                          {\color{lightskyblue}|}
+                          {\color{orange}r_k}
+                          {\color{lightskyblue})}
+                          {\color{lightgreen}|\operatorname{det}\nabla T(}
+                          {\color{orange}\tilde x_{k+1}}
+                          {\color{lightgreen},}
+                          {\color{aqua}\alpha}
+                          {\color{lightgreen})|}
+                        }
+                      \right\} \\
+                      {\color{orange} x_{k+1}} = \left\{ \begin{array}{ll} {\color{orange} \tilde x_{k+1}} & {\color{orange}a_k} \leq {\color{lightgreen}a(}{\color{orange}x_k},{\color{orange}\tilde x_{k+1}}{\color{lightgreen})} \\ \color{orange} x_k &  \text{ otherwise} \end{array}\right.
+                    \end{gathered}
+                  $$
+                </span>
               </div>
               <div style="display: flex">
-                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>12</strong></tt>
+                <span style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>5</strong></span>
                 <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
-                <span><strong style="margin-right: 0.5em">else</strong></span>
+                <span><strong style="margin-right: 0.5em">if</strong>$(k+1 \mod K_U) = 0$<strong style="margin-left: 0.5em">then</strong></span>
               </div>
               <div style="display: flex">
-                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>13</strong></tt>
+                <span style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>6</strong></span>
                 <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
                 <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
-                <span>Keep $\overline \gamma^{(k+1)} = \overline \gamma^{(k)}$</span>
-              </div>
-              <div style="display: flex">
-                <tt style="width: 1.5em; text-align: right; margin-right: 1em;"><strong>14</strong></tt>
-                <span><strong style="margin-right:1em">return</strong> $\{x^{(1)},\ldots,x^{(L)}\}$</span>
+                <span style="margin: 0 1em 0 0.5em; border-left: 1px solid black"></span>
+                <span>
+                  <div style="width: 700px">Update $\color{aqua} \alpha$ by optimizing estimated divergence $\color{lightreen} \gamma \rightarrow C\big(T(\cdot; \gamma)\big)$ induced by running chain $\{x_1,\ldots,x_{k+1}\}$
+                  </div>
+                </span>
               </div>
             </div>
           </blockquote>

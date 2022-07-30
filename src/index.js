@@ -9,7 +9,7 @@ import './index.scss';
 
 Reveal.initialize({
   controls: false,
-  progress: true,
+  progress: false,
   hash: true,
   generatingDiagram: {
     parentElm: document.getElementById('generating-diagram'),
