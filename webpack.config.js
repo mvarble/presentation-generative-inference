@@ -41,8 +41,20 @@ module.exports = {
           'sass-loader'
         ] 
       },
-      { test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/, type: 'asset/resource' },
-      { test: /\.(png|jpg)$/, type: 'asset/resource' },
+      { 
+        test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/, 
+        type: 'asset/resource',
+        generator: {
+          filename: path.join('fonts', '[name]'),
+        },
+      },
+      { 
+        test: /\.(png|jpg)$/, 
+        type: 'asset/resource',
+        generator: {
+          filename: path.join('images', '[name]'),
+        },
+      },
       { test: /\.(jl|txt)$/, type: 'asset/source' },
     ],
   },
