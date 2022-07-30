@@ -31,6 +31,8 @@ jobs:
       with:
         token: ${{ secrets.PAT }}
         ref: 'gh-pages'
+    - name: delete old build
+      run: rm -r *
     - uses: actions/download-artifact@master
       with:
         name: output
