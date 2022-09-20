@@ -1,12 +1,15 @@
+import React from 'react';
 import * as d3 from 'd3';
 import hljs from 'highlight.js/lib/core';
 import julia from 'highlight.js/lib/languages/julia';
-import 'highlight.js/styles/agate.css';
 
-import jlCode from './model.jl';
-import traceTxt from './trace.txt';
-import { container, codeContainer, code, plot, trace } from './index.module.css';
-
+import jlCode from 'raw-loader!./model.jl';
+import traceTxt from 'raw-loader!./trace.txt';
+import SAMPLES from './samples.json';
+import { useDeck, SlideState, Deck } from '@presentations';
+import { Palette, colorsByTheme } from '@utils/colors';
+import { Theme } from '@utils/themes';
+import useTheme from '@hooks/use-theme';
 
 /**
  * establish some constants we will use
@@ -16,7 +19,6 @@ import { container, codeContainer, code, plot, trace } from './index.module.css'
 const NO_PARENT_MESSAGE = 'GeneratingDiagram: `parentElm` is not in deck';
 
 // sample data
-const SAMPLES = require('./samples.json');
 const SAMPLES_MAX = SAMPLES.reduce((M, [A,Z]) => Math.max(A,Z,M), -Infinity);
 const TIMESTAMPS = Array.from({ length: 101 }).map((_, i) => Math.PI * i / 100);
 
@@ -38,7 +40,7 @@ const CODE = hljs.highlight(jlCode, { language: 'jl' }).value;
 
 // output of example trace
 const TRACE = (() => {
-  const output = [];
+  const output: string[] = [];
   let i = 0;
   let M = 10;
   while (i < traceTxt.length) {
@@ -52,6 +54,7 @@ const TRACE = (() => {
  * Configuration of the GeneratingDiagram component
  */
 interface GeneratingDiagramConfig {
+  theme: Theme,
   parentElm: HTMLElement,
   startStage: number,
 }
@@ -61,34 +64,44 @@ interface GeneratingDiagramConfig {
  * It will show Gen.jl code in addition to animating a plot
  */
 class GeneratingDiagram {
-  stage: number; // the stage of the animation
-  codeSel: d3.Selection<HTMLElement, null, null, null>;
-  plotSel: d3.Selection<HTMLElement, null, null, null>;
-  traceSel: d3.Selection<HTMLElement, null, null, null>;
+  stage: number | undefined; // the stage of the animation
+  codeSel: d3.Selection<HTMLDivElement, undefined, null, undefined>;
+  plotSel: d3.Selection<HTMLDivElement, undefined, null, undefined>;
+  traceSel: d3.Selection<HTMLDivElement, undefined, null, undefined>;
+  theme: Theme | undefined;
+  colors: Palette | undefined;
 
-  constructor({ parentElm, startStage }: Partial<GeneratingDiagramConfig>) {
+  constructor({ theme, parentElm, startStage }: GeneratingDiagramConfig) {
     // we necessarily need a parent element for the diagram to work
     if (!parentElm) throw new Error(NO_PARENT_MESSAGE);
 
     // create the container element and append it to the parent
-    const containerSel = d3.create('div').attr('class', container);
-    parentElm.appendChild(containerSel.node());
+    const containerSel = d3.create('div')
+      .attr('class', 'w-full h-full flex flex-col overflow-y-hidden border border-stone-600 dark:border-black');
+    parentElm.appendChild(containerSel.node() as HTMLElement);
 
     // create the code block and append it to the container
-    this.codeSel = d3.create('div').attr('class', codeContainer);
+    this.codeSel = d3.create('div')
+      .attr('class', 'm-0 overflow-y-hidden relative h-full');
     this.codeSel
-      .append('div').attr('class', `${code} hljs`)
-      .append('code').html(CODE);
-    containerSel.node().appendChild(this.codeSel.node());
+      .append('div')
+      .attr('class', 'hljs w-full absolute text-left pl-4 whitespace-pre')
+      .attr('style', 'line-height: 24px; font-size: 18px;')
+      .append('code')
+        .html(CODE);
+    (containerSel.node() as Node).appendChild(this.codeSel.node() as HTMLElement);
 
     // create the trace block and append it to the container
-    this.traceSel = d3.create('div').attr('class', trace);
-    containerSel.node().appendChild(this.traceSel.node());
+    this.traceSel = d3.create('div')
+      .attr('class', 'flex-1 m-0 text-left font-mono bg-gray-300 text-lime-900 dark:bg-zinc-900 dark:text-lime-300 dark:opacity-50 ')
+      .style('font-size', '10px');
+    (containerSel.node() as Node).appendChild(this.traceSel.node() as HTMLElement);
 
     // create the plot block and append it to the container
-    this.plotSel = d3.create('div').attr('class', plot)
+    this.plotSel = d3.create('div').attr('class', 'flex flex-1 chart')
     const axis = this.plotSel
       .append('svg')
+      .attr('class', 'm-auto')
       .attr('viewBox', `0 0 ${WIDTH} ${HEIGHT}`)
       .append('g')
         .attr('transform', `translate(${8 * PAD}, ${PAD})`)
@@ -96,16 +109,18 @@ class GeneratingDiagram {
     axis.append('g').attr('class', 'amplitudes');
     axis.append('g').attr('class', 'paths');
     axis.append('g').attr('class', 'measurements');
-    containerSel.node().appendChild(this.plotSel.node());
+    (containerSel.node() as Node).appendChild(this.plotSel.node() as HTMLElement);
 
     // start the diagram at the specified stage
-    this.setStage(startStage);
+    this.setStage(startStage, theme);
   }
 
-  setStage(stage: number) {
-    // perform updates only if stage changed
-    if (stage === this.stage) return;
+  setStage(stage: number, theme: Theme) {
+    // perform updates only if stage or palette changed
+    if (stage === this.stage && theme === this.theme) return;
     this.stage = stage;
+    this.theme = theme;
+    this.colors = colorsByTheme(this.theme);
 
     // use d3 to animate between stages
     if (this.stage <= 0) this.stage0();
@@ -114,43 +129,54 @@ class GeneratingDiagram {
     else if (this.stage === 3) this.stage3();
     else if (this.stage === 4) this.stage4();
     else if (this.stage === 5) this.stage5();
-    else this.stage6();
+    else if (this.stage === 6) this.stage6();
+    else this.stage7();
   }
 
   createAmplitudes(delay: boolean) {
+    if (typeof this.colors === 'undefined') return;
+    const colors = this.colors;
     return this.plotSel.select('.amplitudes')
       .selectAll('circle')
       .data(SAMPLES)
       .join(
+        // @ts-ignore
         enter => 
           enter.append('circle')
             .attr('cx', 0)
             .attr('cy', d => YSCALE(d[0]))
-            .attr('fill', 'green')
+            .attr('fill', colors.green)
             .attr('fill-opacity', 0.25)
-            .attr('stroke', 'green')
+            .attr('stroke', colors.green)
             .attr('r', 0)
             .transition()
             .delay((_, i) => delay ? 1000 * i / SAMPLES.length : 0)
             .duration(delay ? 500 : 0)
             .attr('r', 2),
-        update => update.attr('r', 2)
+        update => 
+          update
+            .attr('fill', colors.green)
+            .attr('stroke', colors.green)
+            .attr('r', 2)
       );
   }
 
   createPaths(delay: boolean) {
+    if (typeof this.colors === 'undefined') return;
+    const colors = this.colors;
     const line = d3.line().x(d => d[0]).y(d => d[1]);
     return this.plotSel.select('.paths')
       .selectAll('path')
       .data(SAMPLES)
       .join(
+        // @ts-ignore
         enter => {
           const path = enter.append('path')
             .datum(d => line(TIMESTAMPS.map(t => [XSCALE(t), YSCALE(d[0] * Math.cos(t))])))
             .attr("d", d => d)
-            .attr('stroke', '#41825A');
+            .attr('stroke', colors.green);
           if (delay && path.node()) {
-            const length = path.node().getTotalLength() * 1.5;
+            const length = (path.node() as SVGPathElement).getTotalLength() * 1.5;
             path
               .attr('stroke-dashoffset', length)
               .attr('stroke-dasharray', length)
@@ -161,28 +187,38 @@ class GeneratingDiagram {
           }
           return path;
         },
-        update => update.attr('stroke-dashoffset', 0),
+        update => 
+          update
+            .attr('stroke', colors.green)
+            .attr('stroke-dashoffset', 0),
       )
   }
 
   createMeasurements(delay: boolean) {
+    if (typeof this.colors === 'undefined') return;
+    const colors = this.colors;
     return this.plotSel.select('.measurements')
       .selectAll('circle')
       .data(SAMPLES)
       .join(
+        // @ts-ignore
         enter => 
           enter.append('circle')
             .attr('cx', XSCALE(Math.PI))
             .attr('cy', d => YSCALE(d[1]))
-            .attr('fill', 'red')
+            .attr('fill', colors.pink)
             .attr('fill-opacity', 0.25)
-            .attr('stroke', 'red')
+            .attr('stroke', colors.pink)
             .attr('r', 0)
             .transition()
             .delay((_, i) => delay ? 1000 * i / SAMPLES.length : 0)
             .duration(delay ? 500 : 0)
             .attr('r', 2),
-        update => update.attr('r', 2)
+        update => 
+          update
+            .attr('r', 2)
+            .attr('fill', colors.pink)
+            .attr('stroke', colors.pink)
       );
   }
 
@@ -191,6 +227,7 @@ class GeneratingDiagram {
       .selectAll('span')
       .data(TRACE)
       .join(
+        // @ts-ignore
         enter => enter.append('span')
           .html(d => d)
           .style('visibility', 'hidden')
@@ -217,7 +254,7 @@ class GeneratingDiagram {
   }
 
   codeStage3() {
-    this.codeSel.transition().duration(250).style('height', '315px');
+    this.codeSel.transition().duration(250).style('height', '312px');
     this.codeSel.select('.hljs').transition().duration(250).style('top', '0px');
   }
 
@@ -268,6 +305,11 @@ class GeneratingDiagram {
 
   traceStage1() {
     this.traceSel.style('display', 'block');
+    this.traceSel.selectAll('span').remove();
+  }
+
+  traceStage2() {
+    this.traceSel.style('display', 'block');
     this.createTrace(true);
   }
 
@@ -313,79 +355,70 @@ class GeneratingDiagram {
     this.traceStage1();
   }
 
+  stage7() {
+    this.codeStage3();
+    this.plotStage4();
+    this.traceStage2();
+  }
+
   static get LAST_STAGE() {
-    return 6;
+    return 7;
   }
 }
 
-
-interface Reveal {
-  on: (event: string, cb: (args: any[]) => void) => void,
-  getCurrentSlide: () => HTMLElement,
-  getConfig: () => { generatingDiagram: Partial<GeneratingDiagramConfig> },
-  getState: () => { indexh: number, indexv: number, indexf: number },
-  getSlides: () => HTMLElement[],
-}
-
 /**
- * This Reveal.js plugin will interface our class events with slide changes.
+ * This React component will interface our GeneratingDiagram with React
  */
-function GeneratingDiagramPlugin() {
-  let deck: Reveal | undefined;
-  let parentElm: HTMLElement | undefined;
-  let diagram: GeneratingDiagram | undefined;
+export default function GeneratingDiagramManager(
+  { index, slideIndex, ...props }: { index: number, slideIndex: number }
+) {
+  // get a ref for the element
+  const domRef = React.useRef<HTMLElement>(null);
 
-  return {
-    id: 'generatingDiagram',
-    init: (reveal: Reveal) => {
-      // when the deck is ready, we will append the GeneratingDiagram
-      deck = reveal;
-      deck.on('ready', (_) => {
-        // ensure that there is a parent element in the configuration
-        const generatingDiagramConfig = deck.getConfig().generatingDiagram;
-        parentElm = generatingDiagramConfig.parentElm;
-        if (!parentElm) throw new Error(NO_PARENT_MESSAGE);
+  // get a ref for our diagram object
+  const diagramRef = React.useRef<GeneratingDiagram>(null);
 
-        // establish the slide in which the parent resides (ASSUMES HORIZONTAL)
-        const slideNum = deck.getSlides().findIndex(slide => slide.contains(parentElm));
-        if (slideNum === -1) throw new Error(NO_PARENT_MESSAGE);
+  // create a map of the stages
+  const map = React.useMemo(() => (slideState: SlideState) => {
+    if (!slideState) {
+      return 0;
+    } else {
+      const { indexh, indexf } = slideState;
+      if (indexh < slideIndex) return 0
+      else if (indexh > slideIndex) return GeneratingDiagram.LAST_STAGE;
+      else if (indexf < index) return 0;
+      else if (indexf < index + 2) return indexf - index;
+      else if (indexf < index + 5) return indexf - index - 1;
+      else if (indexf < index + 9) return indexf - index - 2;
+      else return GeneratingDiagram.LAST_STAGE;
+    }
+  }, [index, slideIndex]);
 
-        // establish the current stage of the animation
-        const getStage = ({ indexh, indexf }) => {
-          if (indexh < slideNum) return 0;
-          if (indexh > slideNum) return GeneratingDiagram.LAST_STAGE;
-          switch (indexf) {
-            case -1: return -1;
-            case 0: return -1;
-            case 1: return 0;
-            case 2: return 1;
-            case 3: return 1;
-            case 4: return 2;
-            case 5: return 3;
-            case 6: return 3;
-            case 7: return 4;
-            case 8: return 5;
-            case 9: return 5;
-            case 10: return 6;
-          }
-        };
-        const startStage = getStage(deck.getState());
+  // parse the deck state
+  const slideState = useDeck((deck: Deck) => deck.slideState);
 
-        // start the GeneratingDiagram component
-        diagram = new GeneratingDiagram({ 
-          ...generatingDiagramConfig, 
-          parentElm,
-          startStage,
-        });
+  // interface with the theme for colors
+  const theme = useTheme();
 
-        // interface the Reveal.js events with the diagram
-        const fragmentCallback = () => diagram.setStage(getStage(deck.getState()));
-        deck.on('fragmentshown', fragmentCallback);
-        deck.on('fragmenthidden', fragmentCallback);
+  // effect: mount the diagramRef on domRef init
+  React.useEffect(() => {
+    if (domRef.current && !diagramRef.current) {
+      // @ts-ignore
+      diagramRef.current = new GeneratingDiagram({
+        theme,
+        parentElm: domRef.current,
+        startStage: map(slideState),
       });
-    },
-  };
+    }
+  }, [domRef.current, map, slideState]);
+
+  // effect: change stage on slideState and color change
+  React.useEffect(() => {
+    if (diagramRef.current) {
+      diagramRef.current.setStage(map(slideState), theme);
+    }
+  }, [slideState, map, diagramRef.current, theme]);
+
+  // @ts-ignore
+  return <div { ...props } ref={ domRef } />;
 }
-
-
-export default GeneratingDiagramPlugin;

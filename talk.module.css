@@ -1,51 +1,55 @@
-@import "~katex/dist/katex.css";
-@import "~reveal.js/dist/reveal.css";
-@import "~reveal.js/dist/theme/league.css";
-
-:root {
-  --r-main-font-size: 30px;
-  --r-heading-text-transform: none;
-}
-
-blockquote.fat {
-  width: 100%;
-}
-
-.about-me {
+#about-me {
   width: 500px;
   height: 500px;
   margin: 0 auto;
   position: relative;
 }
 
-.about-me > svg {
+#about-me > svg {
   position: absolute; 
   top: 0; 
   left: 0;
 }
 
-.rainbow-text {
-  background-image: linear-gradient(to top, lightgreen, pink, lightblue, orange, aqua);
-  background-clip: text;
-  color: transparent;
+#operations-block {
+  padding: 1em;
 }
 
-blockquote.generative-modeling-split {
+#operations-block > div {
+  position: relative;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  width: 100%;
+  flex-wrap: wrap;
+  font-size: 25px;
+}
+
+#operations-block .operation {
+  flex-shrink: 0;
+  padding: 0.25em;
+}
+
+#generative-modeling-split {
   display: flex;
   height: 470px;
   padding: 0.1em;
 }
 
-blockquote.generative-modeling-split > ul {
+#generative-modeling-split > ul {
   width: calc( 45% - 0.1em );
 }
 
-blockquote.generative-modeling-split ul {
+#generative-modeling-split ul {
   padding-left: 0em;
   margin-left: 1em;
   display: flex;
   justify-content: space-evenly;
   flex-direction: column;
+}
+
+#generative-modeling-split .comment {
+ font-size: 20px;
 }
 
 #generating-diagram {
@@ -57,6 +61,7 @@ blockquote.generative-modeling-split ul {
   height: 580px;
   position: relative;
   text-align: left;
+  font-size: 26px;
 }
 
 #mcmc-diagram ul {
@@ -109,10 +114,26 @@ blockquote.generative-modeling-split ul {
 }
 
 .example-grid > .circle {
-  background: rgba(255, 255, 255, 0.05);
-  box-shadow: 0px 0px 2px rgba(0, 0, 0, 0.2);
-  color: pink;
-  border: 2px solid white;
-  border-radius: 100%;
-  padding: 2rem;
+  @apply bg-neutral-200;
+  @apply text-pink-600;
+  @apply border;
+  @apply border-2;
+  @apply shadow-md;
+  @apply border-neutral-800;
+  @apply rounded-full;
+  @apply text-center;
+  @apply w-24;
+  @apply h-24;
+  @apply flex;
+  @apply flex-col;
+  @apply justify-center;
+  @apply align-middle;
+  @apply p-4;
+}
+
+
+html:global(.dark) .example-grid > .circle {
+  @apply bg-neutral-800;
+  @apply text-pink-300;
+  @apply border-slate-300;
 }

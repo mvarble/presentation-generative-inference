@@ -1,0 +1,831 @@
+---
+title: Generative Inference
+slug: /generative-inference
+date: 2022-07-28T09:30:00-7
+description:
+  Perhaps one of the most enlightening moments in studying probability and statistics is identifying a distinction between the two terms, “probability” and “statistics.” 
+  The concept of a “generative model” is one in which the indeterminism of our measurements is understood through a causal structure which may be simulated on a computer. 
+  Studying and simulating these models allows one to quickly build an intuition with distinguishing between probability and statistics. 
+  Once establishing the intuition of generative models, I explain different inference algorithms one may employ. 
+  These may be seen as having a machine learning 'flavor', in the sense that models may be parameterized through complex maps that are chosen via variational methods and may only be understood through their generation.
+---
+
+import { Fragment } from '@presentations';
+import { 
+  operationsBlock, 
+  operation, 
+  generativeModelingSplit,
+  comment,
+  generatingDiagram,
+  exampleGrid,
+  circle,
+  mcmcDiagram,
+} from './talk.module.css';
+import Titlecard from '@components/presentations/titlecard';
+import Arrow from '@components/arrow';
+
+
+<Titlecard email="matthew@rodent.club">
+  Mathematician for hire!
+</Titlecard>
+
+---
+
+<div className="flex flex-col h-full">
+  ## roadmap
+  <ul style={{ paddingTop: '5em', margin: '0 auto' }}>
+    <Fragment startOn semiOut index="0">
+      <li>formulate generative models and associated language</li>
+    </Fragment>
+    <Fragment semiOut index="0">
+      <li>give examples of generative models for intuition</li>
+    </Fragment>
+    <Fragment semiOut>
+      <li>discuss inference of a generative model</li>
+    </Fragment>
+    <Fragment>
+      <li>summarize a cool inference algorithm</li>
+    </Fragment>
+  </ul>
+</div>
+
+---
+
+import MyResearch from './venn-diagram';
+
+## my research
+
+<MyResearch />
+<Fragment index={ 5 }/>
+
+---
+
+<h2>quick terminology</h2>
+<blockquote>
+  <ul>
+    <Fragment semiOut>
+      <li className="py-4">
+        <b className="orange">Probability.</b>&nbsp;
+        The comprehensive study of <span className="yellow">probability measures</span>, <span className="pink">measurable functions</span>, <span className="sky">kernels</span>, and their related <span className="green">operations and properties</span>.
+      </li>
+    </Fragment>
+    <Fragment semiOut>
+      <li className="py-4">
+        <b className="orange">Statistics.</b>
+        The study of modeling <span className="yellow">indeterminism</span> of real-world <span className="pink">measurements</span> as <span className="pink">quantities $Y$</span> distributing under a <span className="yellow">measure $\mu_\theta$</span> determined by <span className="teal">parameter $\theta \in \Theta$</span>.
+        <span className="green">Investigate $\mu_\theta$</span> to solve <span className="teal">$\theta$</span>.
+      </li>
+    </Fragment>
+    <Fragment>
+      <li className="py-4">
+        <b className="orange">Machine learning.</b>
+        Construct massive family $($<span className="rainbow">$F(\cdot,\alpha)$</span>$)_{\alpha \in \mathcal{A}}$ of functions <span className="rainbow">$F(\cdot, \alpha)$</span> and use data-centric variational methods to select <span className="teal">$\alpha \in \mathcal{A}$</span>, ultimately coercing <span className="rainbow">$F(\cdot, \alpha)$</span> into behaving nicely in some context.
+      </li>
+    </Fragment>
+  </ul>
+</blockquote>
+
+---
+
+## probabilistic operations
+
+<blockquote>
+  <ul>
+    <li className="pt-4">
+      <b className="orange">Probability.</b>&nbsp;
+      The comprehensive study of <span className="yellow">probability measures</span>, <span className="pink">measurable functions</span>, <span className="sky">kernels</span>, and their related <span className="green">operations and properties</span>.
+    </li>
+  </ul>
+  <div id={ operationsBlock }>
+    <div>
+      <Fragment semiOut>
+        <span className={ operation }>
+          $($ 
+          <span className="yellow">$\mu$</span>
+          $,$
+          <span className="pink">$f$</span>
+          $)$
+          <span className="green">$\mapsto$</span>
+          $\displaystyle\int_{\mathbb{X}} f(x) \mu({\rm d}x),$
+        </span>
+      </Fragment>
+      <Fragment semiOut>
+        <span className={ operation }>
+          $($
+          <span className="yellow">$\mu$</span>
+          $,$
+          <span className="pink">$T$</span>
+          $)$
+          <span className="green">$\mapsto$</span>
+          $T_\#\mu = \Big(\Gamma \mapsto \mu(T^{-1}\Gamma) \Big)$
+        </span>
+      </Fragment>
+      <Fragment semiOut>
+        <span style={{ paddingLeft: '300px' }}>Other notation: &nbsp;$X_\#\mu = \mu(X \in \cdot) = \mu_X$</span>
+      </Fragment>
+      <Fragment semiOut>
+        <span className={ operation }>
+          $($
+          <span className="yellow">$\mu$</span>
+          $,$
+          <span className="sky">$\kappa$</span>
+          $)$
+          <span className="green">$\mapsto$</span>
+          $\displaystyle \kappa\ast\mu = \Big( \Gamma \mapsto \int_\mathbb{X} \kappa(x, \Gamma) \mu({\rm d}x) \Big)$
+        </span>
+      </Fragment>
+      <Fragment semiOut>
+        <span className={ operation }>
+          $($
+          <span className="sky">$\kappa$</span>
+          $,$
+          <span className="pink">$T$</span>
+          $)$ 
+          <span className="green">$\mapsto$</span>
+          $T_\#\kappa = \Big( \Gamma \mapsto \kappa\big(T(x), T^{-1}\Gamma\big) \Big)$
+        </span>
+      </Fragment>
+      <Fragment semiOut>
+        <span className={ operation }>
+          $($
+          <span className="yellow">$\mu$</span>
+          $,$
+          <span className="pink">$X$</span>
+          $,$
+          <span className="pink">$Y$</span>
+          $)$
+          <span className="green">$\mapsto$</span>
+          $\mu_{X|Y}, \quad \mu_{(X,Y)} = \mu_{X|Y}\ast \mu_Y$
+        </span>
+      </Fragment>
+    </div>
+  </div>
+</blockquote>
+
+---
+
+import GeneratingDiagram from './generating';
+
+## generative modeling
+
+Construct computer algorithms to consecutively sample <span className="pink">quantities</span>/<span className="yellow">measures</span> via sucessive <span className="green">operations</span>
+
+<blockquote id={ generativeModelingSplit }>
+  <ul>
+    <Fragment>
+      <span>
+        <Fragment startOn semiOut index="3">
+          <li>
+            <span className="orange">Sources.</span>&nbsp;
+            <span className="pink">$x$</span>
+            $\sim$
+            <span className="yellow">$\mu$</span>{/*
+            */}; simple {/*
+            */}<span className="yellow">$\mu$</span>
+          </li>
+        </Fragment>
+      </span>
+    </Fragment>
+    <Fragment index="3">
+      <span>
+        <Fragment startOn semiOut index="6">
+          <li>
+            <span className="orange">Transports/maps.</span>
+            <span className="pink">$y$</span>
+            $\sim$
+            <span className="green">$T_\#$</span>{/*
+            */}<span className="yellow">$\nu$</span>
+            <div>
+              <span className={ 'font-mono ' + comment }>
+                i.e. 
+                <span className="pink">$x$</span>
+                $\sim$
+                <span className="yellow">$\nu$</span>
+                and 
+                <span className="pink">$y$</span>{/*
+                */}$=${/*
+                */}<span className="green">$T($</span>{/*
+                */}<span className="pink">$x$</span>{/*
+                */}<span className="green">$)$</span>
+              </span>
+            </div>
+          </li>
+        </Fragment>
+      </span>
+    </Fragment>
+    <Fragment index="6">
+      <span>
+        <Fragment startOn semiOut index="9">
+          <li>
+            <span className="orange">Kernels/flatmaps.</span>
+            <span className="pink">$y$</span>
+            $\sim$
+            <span className="green">$\kappa \ast$</span>{/*
+            */}<span className="yellow">$\nu$</span>
+            <div>
+              <span className={ 'font-mono ' + comment }>
+                i.e. 
+                <span className="pink">$x$</span>
+                $\sim$
+                <span className="yellow">$\nu$</span>
+                and 
+                <span className="pink">$y$</span>
+                $\sim$
+                <span className="green">$\kappa($</span>{/*
+                */}<span className="pink">$x$</span>{/*
+                */}$,${/*
+                */}<span className="green">$\cdot)$</span>
+              </span>
+            </div>
+          </li>
+        </Fragment>
+      </span>
+    </Fragment>
+    <Fragment index="9">
+      <li>
+        <span className="orange">All sorts of combinations thereof!</span>
+      </li>
+    </Fragment>
+  </ul>
+  <Fragment index="1">
+    <GeneratingDiagram id={ generatingDiagram }/>
+  </Fragment>
+  <Fragment index="10" />
+</blockquote>
+
+---
+
+## example: hidden Markov model
+
+<div className={ exampleGrid } style={{ gridTemplateRows: '150px 200px 150px' }}>
+  <div className={ circle } style={{ gridRow: '1/2', gridColumn: '1/2' }}>$X_0$</div>
+  <Fragment appearDown index="0">
+    <div 
+      className={ circle }
+      style={{ gridRow: '3/4', gridColumn: '1/2' }}>
+      $Y_0$
+    </div>
+  </Fragment>
+  <Fragment appearRight index="1">
+    <div 
+      className={ circle }
+      style={{ gridRow: '1/2', gridColumn: '3/4' }}>
+      $X_1$
+    </div>
+  </Fragment>
+  <Fragment appearDown index="2">
+    <div 
+      className={ circle }
+      style={{ gridRow: '3/4', gridColumn: '3/4' }}>
+      $Y_1$
+    </div>
+  </Fragment>
+  <Fragment appearRight index="3">
+    <div 
+      style={{ gridRow: '1/2', gridColumn: '5/6' }}>
+      $\cdots$
+    </div>
+  </Fragment>
+  <Fragment index="1">
+    <div style={{ gridRow: '1/2', gridColumn: '2/3', position: 'relative' }}>
+      <svg width="200px" viewBox="0 0 350 100">
+        <Arrow color="green" x0={ 0 } y0={ 50 } dx={ 340 } dy={ 0 } strokeWidth={ 8 } />
+      </svg>
+      <span className="green" style={{ position: 'absolute', bottom: '-10px', left: '50px' }}>
+        $\kappa_1 \ast \cdot$
+      </span>
+    </div>
+  </Fragment>
+  <Fragment index="0">
+    <div style={{ gridRow: '2/3', gridColumn: '1/2', position: 'relative' }}>
+      <svg height="200px" viewBox="0 0 100 350">
+        <Arrow x0={ 50 } y0={ 0 } dx={ 0 } dy={ 340 } color="green" strokeWidth={ 8 } />
+      </svg>
+      <span 
+        className="green"
+        style={{
+          position: 'absolute',
+          bottom: '93px',
+          left: '7px',
+          transform: 'rotate(90deg)',
+          width: '100px' }}>
+        $\lambda_1 \ast \cdot$
+      </span>
+    </div>
+  </Fragment>
+  <Fragment index="2">
+    <div style={{ gridRow: '2/3', gridColumn: '3/4', position: 'relative' }}>
+      <svg height="200px" viewBox="0 0 100 350">
+        <Arrow x0={ 50 } y0={ 0 } dx={ 0 } dy={ 340 } strokeWidth={ 8 } color="green" />
+      </svg>
+      <span 
+        className="green" style={{
+          position: 'absolute',
+          bottom: '93px',
+          left: '7px',
+          transform: 'rotate(90deg)',
+          width: '100px' }}>
+        $\lambda_2 \ast \cdot$
+      </span>
+    </div>
+  </Fragment>
+  <Fragment index="3">
+    <div style={{ gridRow: '1/2', gridColumn: '4/5', position: 'relative' }}>
+      <svg width="200px" viewBox="0 0 350 100">
+        <Arrow x0={ 0 } y0={ 50 } dx={ 340 } dy={ 0 } strokeWidth={ 8 } color="green" />
+      </svg>
+      <span className="green" style={{ position: 'absolute', bottom: '-10px', left: '50px' }}>
+        $\kappa_2 \ast \cdot$
+      </span>
+    </div>
+  </Fragment>
+</div>
+
+---
+
+## example: recurrent neural network
+
+<div className={ exampleGrid }>
+  <Fragment grow index="1">
+    <div 
+      className={ circle } 
+      style={{ gridRow: '1/2', gridColumn: '1/2', marginRight: '5em', position: 'relative' }}>
+      $W_0$
+      <Fragment startOn index="2">
+        <span className="yellow" style={{ 
+          position: 'absolute', 
+          width: '100px', 
+          left: '120%',
+          top: '30%' }}>
+          $\sim \mu_W$
+        </span>
+      </Fragment>
+    </div>
+    <div 
+      className={ circle } 
+      style={{ gridRow: '2/3', gridColumn: '1/2', marginRight: '5em', position: 'relative' }}>
+      $L_0$
+      <Fragment startOn index="2">
+        <span className="yellow" style={{ 
+          position: 'absolute', 
+          width: '100px', 
+          left: '120%',
+          top: '30%' }}>
+          $\sim \mu_L$
+        </span>
+      </Fragment>
+    </div>
+  </Fragment>
+  <div 
+    className={ circle } 
+    style={{ 
+      gridRow: '3/4', 
+      gridColumn: '1/2', 
+      marginRight: '5em', 
+      marginBottom: '2em',
+    }}>
+    $X_0$
+  </div>
+  <Fragment appearDown index="0">
+    <div 
+      className={ circle } 
+      style={{ gridRow: '4/5', gridColumn: '1/2', marginRight: '5em' }}>
+      $Y_0$
+    </div>
+  </Fragment>
+  <Fragment grow index="4">
+    <div 
+      className={ circle } 
+      style={{ gridRow: '1/2', gridColumn: '2/3', marginRight: '5em', position: 'relative' }}>
+      $W_1$
+      <Fragment startOn index="5">
+        <span className="yellow" style={{ 
+          position: 'absolute', 
+          width: '100px', 
+          left: '120%',
+          top: '30%' }}>
+          $\sim \mu_W$
+        </span>
+      </Fragment>
+    </div>
+  </Fragment>
+  <Fragment appearRight index="2">
+    <div 
+      className={ circle } 
+      style={{ gridRow: '2/3', gridColumn: '2/3', marginRight: '5em' }}>
+      $L_1$
+    </div>
+    <div 
+      className={ circle } 
+      style={{ 
+        gridRow: '3/4', 
+        gridColumn: '2/3', 
+        marginRight: '5em',
+        marginBottom: '2em', }}>
+      $X_1$
+    </div>
+  </Fragment>
+  <Fragment appearDown index="3">
+    <div 
+      className={ circle } 
+      style={{ gridRow: '4/5', gridColumn: '2/3', marginRight: '5em' }}>
+      $Y_1$
+    </div>
+  </Fragment>
+  <Fragment index="5">
+    <div style={{ 
+      gridRow: '2/4', 
+      gridColumn: '3/4', 
+      fontSize: '60px',
+      paddingBottom: '100px' }}>
+      $\cdots$
+    </div>
+  </Fragment>
+  <svg 
+    viewBox="0 0 100 62" 
+    style={{ 'gridRow': '1/5', gridColumn: '1/4', position: 'relative' }}>
+    <Fragment index="0">
+      <Arrow x0={ 11.5 } y0={ 42 } dx={ 0 } dy={ 6 } strokeWidth={ 0.5 } color="green" />
+    </Fragment>
+    <Fragment index="2">
+      <Arrow x0={ 17 } y0={ 6.5 } dx={ 28 } dy={ 12 } strokeWidth={ 0.5 } color="green" />
+      <Arrow x0={ 17 } y0={ 20.5 } dx={ 28 } dy={ 0 } strokeWidth={ 0.5 } color="green" />
+      <Arrow x0={ 17 } y0={ 34.5 } dx={ 28 } dy={ -12 } strokeWidth={ 0.5 } color="green" />
+      <Arrow x0={ 17 } y0={ 6.5 } dx={ 28 } dy={ 24 } strokeWidth={ 0.5 } color="green" />
+      <Arrow x0={ 17 } y0={ 20.5 } dx={ 28 } dy={ 12 } strokeWidth={ 0.5 } color="green" />
+      <Arrow x0={ 17 } y0={ 34.5 } dx={ 28 } dy={ 0 } strokeWidth={ 0.5 } color="green" />
+    </Fragment>
+    <Fragment index="3">
+      <Arrow x0={ 51.5 } y0={ 42 } dx={ 0 } dy={ 6 } strokeWidth={ 0.5 } color="green" />
+    </Fragment>
+    <Fragment index="5">
+      <Arrow x0={ 57 } y0={ 6.5 } dx={ 28 } dy={ 12 } strokeWidth={ 0.5 } color="green" />
+      <Arrow x0={ 57 } y0={ 20.5 } dx={ 28 } dy={ 0 } strokeWidth={ 0.5 } color="green" />
+      <Arrow x0={ 57 } y0={ 34.5 } dx={ 28 } dy={ -12 } strokeWidth={ 0.5 } color="green" />
+      <Arrow x0={ 57 } y0={ 6.5 } dx={ 28 } dy={ 24 } strokeWidth={ 0.5 } color="green" />
+      <Arrow x0={ 57 } y0={ 20.5 } dx={ 28 } dy={ 12 } strokeWidth={ 0.5 } color="green" />
+      <Arrow x0={ 57 } y0={ 34.5 } dx={ 28 } dy={ 0 } strokeWidth={ 0.5 } color="green" />
+    </Fragment>
+  </svg>
+  <div style={{
+    gridRow: '1/5',
+    gridColumn: '1/2', 
+    position: 'relative',
+    width: '100%',
+    height: '100%' }}>
+    <Fragment index="0">
+      <div className="green" style={{
+        position: 'absolute',
+        left: '130px',
+        bottom: '130px',
+      }}>
+        $\lambda_1\ast\cdot$
+      </div>
+    </Fragment>
+    <Fragment index="2">
+      <div className="green" style={{
+        position: 'absolute',
+        left: '255px',
+        top: '50px' }}>
+        $T(\cdot,\theta)_\#\cdot$
+      </div>
+    </Fragment>
+  </div>
+  <div style={{
+    gridRow: '1/5',
+    gridColumn: '2/3', 
+    position: 'relative',
+    width: '100%',
+    height: '100%' }}>
+    <Fragment index="3">
+      <div className="green" style={{
+        position: 'absolute',
+        left: '130px',
+        bottom: '130px',
+      }}>
+        $\lambda_2\ast\cdot$
+      </div>
+    </Fragment>
+    <Fragment index="5">
+      <div className="green" style={{
+        position: 'absolute',
+        left: '255px',
+        top: '50px' }}>
+        $T(\cdot,\theta)_\#\cdot$
+      </div>
+    </Fragment>
+  </div>
+</div>
+
+---
+
+## calibration
+
+<div className="pt-52">
+  <blockquote>
+    When our measurement is a quantity <span className="pink">$Y$</span>, we may calibrate <span className="teal">$\theta$</span> by repeatedly generating <span className="pink">$Y$</span> under <span className="yellow">$\mu_\theta$</span>.
+  </blockquote>
+</div>
+
+---
+
+## inference
+
+All generative models produce to some joint measure <span className="yellow">$\mu$</span> (respectively <span className="yellow">$\mu_\theta$</span>).
+<span className="green">Inference</span> is the notion of studying a quantity <span className="pink">$X$</span> conditioned on one <span className="pink">$Y$</span>; i.e. making judgements about <span className="green">$\mu_{X|Y}$</span>.
+
+<blockquote className="mt-4">
+  <Fragment>
+    <div>
+      <div className="orange text-center">
+        Bayesian inference.
+      </div>
+      <div className="text-center p-4">
+        $\mu(X \in {\rm d}x, Y \in {\rm d}y) = p_{XY}(x,y) {\rm d}x {\rm d}y$
+      </div>
+      <div className="flex pt-6">
+        <Fragment semiOut>
+          <span>
+            $
+              \leadsto \begin{aligned}
+                \mu(X \in {\rm d}x) &= p_X(x) {\rm d}x  \\
+                \mu(Y \in {\rm d}y) &= p_Y(y) {\rm d}y  \\
+                \mu(X \in {\rm d}x | Y = y) &= p_{X|Y}(x|y) {\rm d}x  \\
+                \mu(Y \in {\rm d}y | X = x) &= p_{Y|X}(y|x) {\rm d}y  \\
+              \end{aligned}
+            $
+          </span>
+        </Fragment>
+        <Fragment>
+          <span className="pt-4 pl-16">
+            $
+              \begin{aligned}
+                p_{X|Y} 
+                &= p_{XY}/p_Y \\
+                &= p_X p_{Y|X} / p_Y
+              \end{aligned}
+            $
+          </span>
+        </Fragment>
+      </div>
+    </div>
+  </Fragment>
+</blockquote>
+
+---
+
+## Bayesian inference
+
+Various *estimators* for <span className="pink">$X$</span>$|$<span className="pink">$Y=y$</span>, often based off of <span className="green">$p_{X|Y} \propto p_{Y|X}p_X$</span>
+
+<blockquote>
+  <ul>
+    <Fragment semiOut>
+      <li style={{ padding: '0.25em 0' }}>
+        <span className="orange">MLE (respectively MAP)</span>
+        Maximize $p_{Y|X}(y|\cdot)$ (respectively $p_{X|Y}(\cdot|y)$).
+      </li>
+    </Fragment>
+    <Fragment semiOut>
+      <li style={{ padding: '0.25em 0' }}>
+        <span className="orange">Importance sampling.</span>
+        Sample a weighted prior.
+        <div style={{ textAlign: 'center', padding: '0.5em' }}>$\displaystyle\int_{\mathbb{X}} x \mu_{X|Y}({\rm d}x|y) \propto \int_{\mathbb{X}} x p_{Y|X}(y|x) \mu_X({\rm d}x)$</div>
+        <div className="font-mono" style={{ fontSize: '20px', padding: '0.5em' }}>
+          i.e. sample $x_1,\ldots,x_M \sim \mu_X$ and take 
+          $\displaystyle \hat{x} = \sum_{i=1}^M \bigg( \frac{p(y|x_i) x_i}{\sum_{j=1}^M p(y|x_j)} \bigg) $
+        </div>
+      </li>
+    </Fragment>
+    <Fragment semiOut>
+      <li style={{ padding: '0.25em 0' }}>
+        <span className="orange">MCMC</span>
+        Construct a Markov chain with proposal kernel 
+        <div className="text-center p-4 sky">
+          $Q({\rm d}x'|x) = q(x'|x){\rm d}x'$
+        </div>
+        and rejection scheme to ensure the invariant distribution is <span className="green">$\mu_{X|Y}$</span>.
+      </li>
+    </Fragment>
+  </ul>
+</blockquote>
+
+---
+
+import MCMCDiagram from './mcmc';
+
+## Markov-chain Monte Carlo
+
+<Fragment index="22" out>
+  <span className="green" style={{
+    position: 'absolute',
+    top: '420px',
+    left: '420px',
+  }}>
+  Do we get the idea?
+  </span>
+</Fragment>
+
+<MCMCDiagram id={ mcmcDiagram }>
+  <blockquote>
+    <div style={{ display: 'flex' }}>
+      <span style={{ width: '1.5em', textAlign: 'right', marginRight: '1em' }}>
+        <strong>1</strong>
+      </span>
+      <span>Initialize state <span className="orange">$x_0$</span></span>
+    </div>
+    <div style={{ display: 'flex' }}>
+      <span style={{ width: '1.5em', textAlign: 'right', marginRight: '1em' }}>
+        <strong>2</strong>
+      </span>
+      <span>
+        <strong style={{ marginRight: '0.5em' }}>for</strong>
+        <span>$k = 0, \ldots, L-1$</span>
+        <strong style={{ marginLeft: '0.5em' }}>do</strong>
+      </span>
+    </div>
+    <div style={{ display: 'flex' }}>
+      <span style={{ width: '1.5em', textAlign: 'right', marginRight: '1em' }}>
+        <strong>3</strong>
+      </span>
+      <span style={{ margin: '0 1em 0 0.5em', borderLeft: '1px solid black' }}></span>
+      <span>
+        sample proposal 
+        <span className="orange">$\tilde x_{k+1}$</span>
+        $\sim$
+        <span className="sky">$Q(\cdot|$</span>{/*
+        */}<span className="orange">$x_k$</span>{/*
+        */}<span className="sky">$)$</span>
+      </span>
+    </div>
+    <div style={{ display: 'flex' }}>
+      <span style={{ width: '1.5em', textAlign: 'right', marginRight: '1em' }}>
+        <strong>4</strong>
+      </span>
+      <span style={{ margin: '0 1em 0 0.5em', borderLeft: '1px solid black' }}></span>
+      <span>
+        sample 
+        <span className="orange">$a_k$</span>
+        $\sim$
+        <span className="yellow">$U(0,1)$</span>
+        and set the following.
+        <div>
+          <div className="pt-4">
+            <span className="green">$a($</span>{/*
+            */}<span className="orange">$x_k$</span>{/*
+            */}$,${/*
+            */}<span className="orange">$\tilde x_{k+1}$</span>{/*
+            */}<span className="green">$)$</span>
+            <span>$=$</span>
+            <span className="green">$\displaystyle \min\left\{ 1, \frac{p_X(\tilde x_{k+1})p_{Y|X}(y|\tilde x_{k+1})q(x_k|\tilde x_{k+1})}{p_X(x_k)p_{Y|X}(y|x_k)q(\tilde x_{k+1}|x_k)} \right\}$</span>
+          </div>
+          <div className="pt-4">
+            <span className="orange">$x_{k+1}$</span>
+            $=$
+            <span className="green">$
+              \left\{ \begin{array}{ll} \tilde x_{k+1} & a_k \leq a(x_k,\tilde x_{k+1}) \\ x_k &  \text{ otherwise} \end{array}\right.
+            $</span>
+          </div>
+        </div>
+      </span>
+    </div>
+  </blockquote>
+</MCMCDiagram>
+<Fragment index="65" />
+
+---
+
+<h2><span className="underline">transport map</span> Markov-chain Monte Carlo</h2>
+
+Learn a proposal kernel 
+<span className="green">$T(\cdot$</span>{/*
+*/}$,${/*
+*/}<span className="teal">$\alpha$</span>{/*
+*/}<span className="green">$)_\#$</span>{/*
+*/}<span className="sky">$Q$</span>{/*
+*/} through variational method.
+
+<blockquote className="mt-4">
+  <div style={{ fontSize: '22px', textAlign: 'left' }}>
+    <div style={{ display: 'flex' }}>
+      <span style={{ width: '1.5em', textAlign: 'right', marginRight: '1em' }}>
+        <strong>1</strong>
+      </span>
+      <span>Initialize state <span className="orange">$x_0$</span> and parameter <span className="teal">$\alpha$</span></span>
+    </div>
+    <div style={{ display: 'flex' }}>
+      <span style={{ width: '1.5em', textAlign: 'right', marginRight: '1em' }}>
+        <strong>2</strong>
+      </span>
+      <span>
+        <strong style={{ marginRight: '0.5em' }}>for</strong>
+        <span>$k = 0, \ldots, L-1$</span>
+        <strong style={{ marginLeft: '0.5em' }}>do</strong>
+      </span>
+    </div>
+    <div style={{ display: 'flex' }}>
+      <span style={{ width: '1.5em', textAlign: 'right', marginRight: '1em' }}>
+        <strong>3a</strong>
+      </span>
+      <span style={{ margin: '0 1em 0 0.5em', borderLeft: '1px solid black' }}></span>
+      <span>{/*
+        */}compute reference {/*
+        */}<span className="orange">$r_k$</span>{/*
+        */}$=${/*
+        */}<span className="green">$T($</span>{/*
+        */}<span className="orange">$x_k$</span>{/*
+        */}$,${/*
+        */}<span className="teal">$\alpha$</span>{/*
+        */}<span className="green">$)$</span>{/*
+      */}</span>
+    </div>
+    <div style={{ display: 'flex' }}>
+      <span style={{ width: '1.5em', textAlign: 'right', marginRight: '1em' }}>
+        <strong>3b</strong>
+      </span>
+      <span style={{ margin: '0 1em 0 0.5em', borderLeft: '1px solid black' }}></span>
+      <span>{/*
+        */}sample proposal reference {/*
+        */}<span className="orange">$\tilde r_{k+1}$</span>{/*
+        */}$\sim${/*
+        */}<span className="sky">$Q(\cdot|$</span>{/*
+        */}<span className="orange">$r_k$</span>{/*
+        */}<span className="sky">$)$</span>{/*
+      */}</span>
+    </div>
+    <div style={{ display: 'flex' }}>
+      <span style={{ width: '1.5em', textAlign: 'right', marginRight: '1em' }}>
+        <strong>3c</strong>
+      </span>
+      <span style={{ margin: '0 1em 0 0.5em', borderLeft: '1px solid black' }}></span>
+      <span>{/*
+        */}evaluate proposal {/*
+        */}<span className="orange">$\tilde x_{k+1}$</span>{/*
+        */}$=${/*
+        */}<span className="green">$T^{-1}($</span>{/*
+        */}<span className="orange">$\tilde r_{k+1}$</span>{/*
+        */}$,${/*
+        */}<span className="teal">$\alpha$</span>{/*
+        */}<span className="green">$)$</span>{/*
+      */}</span>
+    </div>
+    <div style={{ display: 'flex' }}>
+      <span style={{ width: '1.5em', textAlign: 'right', marginRight: '1em' }}>
+        <strong>4</strong>
+      </span>
+      <span style={{ margin: '0 1em 0 0.5em', borderLeft: '1px solid black' }}></span>
+      <span>
+        sample 
+        <span className="orange">$a_k$</span>
+        $\sim$
+        <span className="yellow">$U(0,1)$</span>
+        and set the following.
+        <div>
+          <div className="pt-4">
+            <span className="green">$a($</span>{/*
+            */}<span className="orange">$x_k$</span>{/*
+            */}$,${/*
+            */}<span className="orange">$\tilde x_{k+1}$</span>{/*
+            */}<span className="green">$)$</span>
+            <span>$=$</span>
+            <span className="green">$\displaystyle \min\left\{ 1, \frac{p_X(\tilde x_{k+1})p_{Y|X}(y|\tilde x_{k+1})q(r_k|\tilde r_{k+1})|\operatorname{det}\nabla T(x_k,\alpha)|}{p_X(x_k)p_{Y|X}(y|x_k)q(\tilde r_{k+1}|r_k)|\operatorname{det}\nabla T(\tilde x_{k+1},\alpha)|} \right\}$</span>
+          </div>
+          <div className="pt-4">
+            <span className="orange">$x_{k+1}$</span>
+            $=$
+            <span className="green">$
+              \left\{ \begin{array}{ll} \tilde x_{k+1} & a_k \leq a(x_k,\tilde x_{k+1}) \\ x_k &  \text{ otherwise} \end{array}\right.
+            $</span>
+          </div>
+        </div>
+      </span>
+    </div>
+    <div style={{ display: 'flex' }}>
+      <span style={{ width: '1.5em', textAlign: 'right', marginRight: '1em' }}>
+        <strong>5</strong>
+      </span>
+      <span style={{ margin: '0 1em 0 0.5em', borderLeft: '1px solid black' }}></span>
+      <span><strong style={{ marginRight: '0.5em' }}>if</strong>$(k+1 \mod K_U) = 0$
+      <strong style={{ marginLeft: '0.5em' }}>then</strong></span>
+    </div>
+    <div style={{ display: 'flex' }}>
+      <span style={{ width: '1.5em', textAlign: 'right', marginRight: '1em' }}>
+        <strong>6</strong>
+      </span>
+      <span style={{ margin: '0 1em 0 0.5em', borderLeft: '1px solid black' }}></span>
+      <span style={{ margin: '0 1em 0 0.5em', borderLeft: '1px solid black' }}></span>
+      <span style={{ margin: '0 1em 0 0.5em', borderLeft: '1px solid black' }}></span>
+      <span>
+        <div style={{ width: '700px' }}>
+          Update <span className="teal">$\alpha$</span> by optimizing estimated divergence <span className="green">$\gamma \rightarrow C\big(T(\cdot; \gamma)\big)$</span> induced by running chain $\{x_1,\ldots,x_{k+1}\}$
+        </div>
+      </span>
+    </div>
+  </div>
+</blockquote>
+
+---
+
+<div className="flex flex-col justify-center h-full">
+  # That's it!
+</div>

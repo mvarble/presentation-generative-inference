@@ -6,7 +6,7 @@ using Gen;
 # model
 @gen function simple_gaussian_model()
     X = @trace(mvnormal([0.0, 0.0], [1.04 -0.96 ; -0.96 1.04]), :source);
-    Z = @trace(normal(X[2], 1.0), :measurement);
+    @trace(normal(X[2], 1.0), :measurement);
 end
 
 # inference
@@ -48,7 +48,7 @@ function build_chain(init::Vector{<:Real}, measurement::Real, length::Int)
     );
 
     # iteratively build the chain
-    for i=2:length
+    for _=2:length
         # perform a proposal
         (proposal_trace, accepted) = custom_mh_meta(trace, rw_proposal, (0.25,));
 
@@ -68,5 +68,6 @@ end
 #---------------------------------------------------------------------------------------------
 # output example Metropolis-Hastings chain
 #---------------------------------------------------------------------------------------------
-chain = build_chain([0.0, 0.0], -1.98, 100);
-write("chain.json", json(chain));
+using JSON
+chain = build_chain([0.0, 0.0], -1.98, 1000);
+write("chain.json", JSON.json(chain));

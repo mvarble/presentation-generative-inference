@@ -1,6 +1,11 @@
+import React from 'react';
 import * as d3 from 'd3';
 
-import { container, proposal, accepted, rejected } from './index.module.css';
+import { useDeck, SlideState, DeckState } from '@presentations';
+import { Theme } from '@utils/themes';
+import { colorsByTheme } from '@utils/colors';
+import useTheme from '@hooks/use-theme';
+import REAL_PROPOSALS from './chain.json';
 
 /**
  * establish some constants we will use
@@ -10,7 +15,6 @@ import { container, proposal, accepted, rejected } from './index.module.css';
 const NO_PARENT_MESSAGE = 'MCMCDiagram: `parentElm` is not in deck';
 
 // sample data
-const REAL_PROPOSALS = require('./chain.json');
 const FAKE_PROPOSALS = [
   { x: 1.1, y: 4, accept: true },
   ...Array.from({ length: 20 }).map(() => {
@@ -58,6 +62,7 @@ function getChain(proposals: Proposal[], preRejection: boolean): ChainLink[] {
     } else if (accept) {
       chain.push({ x, y, amount: 1 });
     } else {
+      // @ts-ignore
       getLastSuccess(chain).amount++;
       chain.push({ x, y, amount: 0 });
     }
@@ -70,10 +75,13 @@ function getMaxAmount(chain: ChainLink[]): number {
 }
 
 function getLastSuccess(chain: ChainLink[]): ChainLink {
+  // @ts-ignore
   return chain.slice(0).reverse().find(p => p.amount);
 }
 
-function chainLinkColor(maxAmount: number): (chainLink: ChainLink) => string {
+function chainLinkColor(maxAmount: number, theme: Theme): (chainLink: ChainLink) => string {
+  const colors = colorsByTheme(theme);
+
   // @ts-ignore
   return (chainLink) => (
     typeof chainLink.amount === 'number'
@@ -81,18 +89,10 @@ function chainLinkColor(maxAmount: number): (chainLink: ChainLink) => string {
       d3.scaleLinear()
       .domain([0, maxAmount])
       // @ts-ignore
-      .range([d3.color('purple'), d3.color('yellow')])
+      .range([d3.color(colors.purple), d3.color(colors.yellow)])
       (chainLink.amount)
     )
-    : d3.color('white')
-  );
-}
-
-function chainLinkOpacity(maxAmount: number): (chainLink: ChainLink) => number {
-  return (chainLink) => (
-    typeof chainLink.amount === 'number'
-    ? chainLink.amount / maxAmount
-    : 0.5
+    : d3.color(colors.text)
   );
 }
 
@@ -100,6 +100,7 @@ function chainLinkOpacity(maxAmount: number): (chainLink: ChainLink) => number {
  * Configuration of the MCMCDiagram component
  */
 interface MCMCDiagramConfig {
+  theme: Theme,
   parentElm: HTMLElement,
   startStage: number,
 }
@@ -112,29 +113,42 @@ interface MCMCDiagramConfig {
  * This class will create d3 animations for the `mcmc` slide of the presentation.
  */
 class MCMCDiagram {
-
-  stage: number;
+  stage: number | undefined;
   parentElm: HTMLElement;
-  svgSel: d3.Selection<SVGSVGElement, ChainLink[], null, null>;
+  svgSel: d3.Selection<SVGSVGElement, ChainLink[], null, undefined>;
+  theme: Theme | undefined;
 
-  constructor({ parentElm, startStage }: MCMCDiagramConfig) {
+  constructor({ parentElm, startStage, theme }: MCMCDiagramConfig) {
     // we necessarily need a parent element for the diagram to work
     if (!parentElm) throw new Error(NO_PARENT_MESSAGE);
     this.parentElm = parentElm;
 
     // create the container element and append it to the parent
-    const containerSel = d3.create('div').attr('class', container);
-    this.svgSel = containerSel.append('svg').attr('viewBox', `0 0 ${WIDTH} ${HEIGHT}`);
-    parentElm.appendChild(containerSel.node());
+    const containerSel = d3.create('div')
+      .attr('class', 'absolute w-full h-full flex')
+      .attr('style', 'top: 0; left: 0;')
+
+    // @ts-ignore
+    this.svgSel = containerSel
+      .append('svg')
+      .attr('class', 'w-full chart')
+      .style('z-index', '-1')
+      .style('position', 'absolute')
+      .style('bottom', '0')
+      .attr('viewBox', `0 0 ${WIDTH} ${HEIGHT}`);
+    this.svgSel.append('g').attr('class', 'shift').attr('transform', 'translate(-50, -10)');
+
+    parentElm.appendChild(containerSel.node() as Node);
 
     // start the diagram at the specified stage
-    this.setStage(startStage);
+    this.setStage(startStage, theme);
   }
 
-  setStage(stage: number) {
+  setStage(stage: number, theme: Theme) {
     // perform updates only if stage changed
-    if (stage === this.stage) return;
+    if (stage === this.stage && theme === this.theme) return;
     this.stage = stage;
+    this.theme = theme;
 
 
     if (this.stage === 1) this.showAlgorithm();
@@ -142,14 +156,18 @@ class MCMCDiagram {
   }
 
   showAlgorithm() {
+    if (typeof this.stage === 'undefined') return;
+
     // grow the font size of the algorithm
-    d3.select(this.parentElm)
+    d3.select(this.parentElm.firstChild)
       .transition()
       .duration(500)
-      .style('font-size', '26px');
+      .style('font-size', '30px')
+      .style('height', '580px');
 
     // remove the chain
     this.svgSel
+      .select('.shift')
       .selectAll('circle')
       .data([])
       .exit()
@@ -160,11 +178,14 @@ class MCMCDiagram {
   }
 
   showDiagram() {
+    if (typeof this.stage === 'undefined' || typeof this.theme === 'undefined') return;
+
     // shrink the font size of the algorithm
-    d3.select(this.parentElm)
+    d3.select(this.parentElm.firstChild)
       .transition()
       .duration(500)
-      .style('font-size', '18px');
+      .style('font-size', '16px')
+      .style('height', '230px');
 
     // get the chain data
     const chainLength = Math.ceil(this.stage / 2);
@@ -173,10 +194,18 @@ class MCMCDiagram {
 
     // get the chain metadata
     const maxAmount = getMaxAmount(chain);
-    const color = chainLinkColor(maxAmount);
-    const opacity = chainLinkOpacity(maxAmount);
+    const color = chainLinkColor(maxAmount, this.theme);
+    const opacity = (chainLink: ChainLink) => (
+      (typeof chainLink.amount === 'number' && chainLink.amount === 0)
+      ? 0.0
+      : 0.5
+    );
     const lastSuccess = getLastSuccess(chain);
-    const strokeWidth = (chainLink: ChainLink) => chainLink.amount === 0 ? 0.1 : 1;
+    const strokeWidth = (chainLink: ChainLink) => (
+      typeof chainLink.amount === 'number'
+      ? (chainLink.amount === 0 ? 0.33 : 1.0)
+      : 0.5
+    );
     const endX = (chainLink: ChainLink) => XSCALE(chainLink.x);
     const endY = (chainLink: ChainLink) => YSCALE(chainLink.y);
     const startX = (chainLink: ChainLink, index: number) => (
@@ -188,9 +217,11 @@ class MCMCDiagram {
 
     // enter/update the dom components associated with the chain
     this.svgSel
+      .select('.shift')
       .selectAll('circle')
       .data(chain)
       .join(
+        // @ts-ignore
         enter => (
           enter
           .append('circle')
@@ -231,65 +262,62 @@ class MCMCDiagram {
 
 }
 
-interface Reveal {
-  on: (event: string, cb: (args: any[]) => void) => void,
-  getCurrentSlide: () => HTMLElement,
-  getConfig: () => { mcmcDiagram: Partial<MCMCDiagramConfig> },
-  getState: () => { indexh: number, indexv: number, indexf: number },
-  getSlides: () => HTMLElement[],
-}
-
 /**
- * This Reveal.js plugin will interface our class events with slide changes.
+ * This React component will interface our diagram
  */
-function MCMCDiagramPlugin() {
-  let deck: Reveal | undefined;
-  let parentElm: HTMLElement | undefined;
-  let diagram: MCMCDiagram | undefined;
+function MCMCDiagramManager(
+  { children, ...props }: React.PropsWithChildren<object>
+) {
+  // slideIndex
+  const slideIndex = 11;
 
-  return {
-    id: 'mcmcDiagram',
-    init: (reveal: Reveal) => {
-      // when the deck is ready, we will append the GeneratingDiagram
-      deck = reveal;
-      deck.on('ready', (_) => {
-        // ensure that there is a parent element in the configuration
-        const mcmcDiagramConfig = deck.getConfig().mcmcDiagram;
-        parentElm = mcmcDiagramConfig.parentElm;
-        if (!parentElm) throw new Error(NO_PARENT_MESSAGE);
+  // get a ref for the element
+  const domRef = React.useRef(null);
 
-        // establish the slide in which the parent resides (ASSUMES HORIZONTAL)
-        const slideNum = deck.getSlides().findIndex(slide => slide.contains(parentElm));
-        if (slideNum === -1) throw new Error(NO_PARENT_MESSAGE);
+  // get a ref for our diagram object
+  const diagramRef = React.useRef<MCMCDiagram>(null);
 
-        // establish the current stage of the animation
-        const getStage = ({ indexh, indexf }) => {
-          if (indexh < slideNum) return 1;
-          if (indexh > slideNum) return MCMCDiagram.LAST_STAGE;
-          const preSkipStage = Math.max(1, Math.min(indexf+2, MCMCDiagram.LAST_STAGE));
-          if (preSkipStage < SKIP_SPOT) {
-            return preSkipStage;
-          } else {
-            return 2 * REAL_PROPOSALS.length + (preSkipStage - SKIP_SPOT);
-          }
-        };
-        const startStage = getStage(deck.getState());
+  // create a map of the stages
+  const map = React.useMemo(() => (slideState: SlideState) => {
+    if (!slideState) return 0;
+    else {
+      const { indexh, indexf } = slideState;
+      if (indexh < slideIndex) return 1;
+      if (indexh > slideIndex) return MCMCDiagram.LAST_STAGE;
+      const preSkipStage = Math.max(1, Math.min(indexf + 2, MCMCDiagram.LAST_STAGE));
+      if (preSkipStage < SKIP_SPOT) {
+        return preSkipStage;
+      } else {
+        return 2 * REAL_PROPOSALS.length + (preSkipStage - SKIP_SPOT);
+      }
+    }
+  }, [slideIndex]);
 
-        // start the GeneratingDiagram component
-        diagram = new MCMCDiagram({ 
-          ...mcmcDiagramConfig, 
-          parentElm,
-          startStage,
-        });
+  // parse the deck state
+  const slideState = useDeck((deck: DeckState) => deck.slideState);
 
-        // interface the Reveal.js events with the diagram
-        const fragmentCallback = () => diagram.setStage(getStage(deck.getState()));
-        deck.on('fragmentshown', fragmentCallback);
-        deck.on('fragmenthidden', fragmentCallback);
+  // interface with the theme
+  const theme = useTheme();
+
+  // effect: mount the diagramRef on domRef init
+  React.useEffect(() => {
+    if (domRef.current && !diagramRef.current) {
+      // @ts-ignore
+      diagramRef.current = new MCMCDiagram({
+        parentElm: domRef.current,
+        startStage: map(slideState),
       });
-    },
-  };
+    }
+  }, [domRef.current, map, slideState]);
+
+  React.useEffect(() => {
+    if (diagramRef.current) {
+      diagramRef.current.setStage(map(slideState), theme);
+    }
+  }, [slideState, map, diagramRef.current, theme]);
+
+  // render a div
+  return <div { ...props } ref={ domRef }>{ children }</div>;
 }
 
-
-export default MCMCDiagramPlugin;
+export default MCMCDiagramManager;
